@@ -12,7 +12,7 @@ class IQGeoSearch {
         this._sideBarVisible = false;
 
         vscode.window.onDidChangeActiveTextEditor((editor) => {
-            this._viewColumn = editor.viewColumn;
+            this._viewColumn = editor?.viewColumn;
         });
 
         context.subscriptions.push(
@@ -143,7 +143,7 @@ class IQGeoSearch {
 
         let maxView = 2;
         vscode.window.visibleTextEditors.forEach((editor) => {
-            const col = editor.viewColumn;
+            const col = editor?.viewColumn ?? 0;
             if (col > maxView) {
                 maxView = col;
             }
@@ -156,7 +156,7 @@ class IQGeoSearch {
             const col = this._previewColumn();
             const fileName = this._previewSymbol._fileName;
             return vscode.window.visibleTextEditors.find(
-                (editor) => editor.viewColumn === col && editor.document.fileName === fileName
+                (editor) => editor?.viewColumn === col && editor.document.fileName === fileName
             );
         }
     }
@@ -176,11 +176,13 @@ class IQGeoSearch {
             this._symbolSelector.placeholder =
                 'Search Definitions (<method> or <class> or <class>.<method> + supports ^ and $)';
 
+            // ENH: prevent re-sorting of items when available in api.
+
             this._symbolSelector.onDidChangeValue(
                 Utils.debounce(() => {
                     this._lastQuery = this._symbolSelector.value;
                     this._updateSymbolSelector();
-                }, 300)
+                }, 250)
             );
 
             this._symbolSelector.onDidChangeActive(
@@ -202,7 +204,7 @@ class IQGeoSearch {
                             this._closeSymbolPreview();
                         }
                     }
-                }, 300)
+                }, 350)
             );
 
             this._symbolSelector.onDidAccept(() => {

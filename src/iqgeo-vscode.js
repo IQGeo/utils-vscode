@@ -26,7 +26,7 @@ const IGNORE_DIRS = [
     'Externals',
 ];
 
-const DEBUG = true;
+const DEBUG = false;
 
 /**
  * Main class for IQGeo VSCode extension.
@@ -390,14 +390,16 @@ class IQGeoVSCode {
         return false;
     }
 
-    _matchScore(string, query) {
-        const { length } = query;
-        if (length > string.length) return;
-
+    _matchScoreReg(query) {
         const chars = query.split('');
         const last = chars.pop();
         const str = chars.map((c) => `${c}[^${c}]*?`).join('') + last;
-        const reg = new RegExp(str, 'g');
+        return new RegExp(str, 'g');
+    }
+
+    _matchScore(string, query, reg) {
+        const length = query.length;
+        if (length > string.length) return;
 
         const allMatches = string.toLowerCase().match(reg) || [];
 
@@ -575,24 +577,39 @@ class IQGeoVSCode {
 
     _sortSymbols(classString, methodString, symbols) {
         const origQuery = classString ? `${classString}.${methodString}` : methodString;
+        const reg = this._matchScoreReg(origQuery);
+        const methodReg = new RegExp(`^${methodString}(\\(\\))?$`, 'i')
 
         symbols.sort((a, b) => {
             const orderA = a._order;
             const orderB = b._order;
 
             if (orderA === orderB) {
-                let scoreA = this._matchScore(a.name, origQuery);
-                let scoreB = this._matchScore(b.name, origQuery);
+                let scoreA, scoreB;
 
+                if (classString) {
+                    scoreA = this._matchScore(a.name, origQuery, reg);
+                }
                 if (scoreA === undefined && a._methodName) {
-                    scoreA = this._matchScore(a._methodName, methodString);
+                    if (methodReg.test(a._methodName)) {
+                        scoreA = 1;
+                    } else {
+                        scoreA = this._matchScore(a._methodName, methodString, reg);
+                    }
                 }
                 if (scoreA === undefined) {
                     scoreA = -10000;
                 }
 
+                if (classString) {
+                    scoreB = this._matchScore(b.name, origQuery, reg);
+                }
                 if (scoreB === undefined && b._methodName) {
-                    scoreB = this._matchScore(b._methodName, methodString);
+                    if (methodReg.test(b._methodName)) {
+                        scoreB = 1;
+                    } else {
+                        scoreB = this._matchScore(b._methodName, methodString, reg);
+                    }
                 }
                 if (scoreB === undefined) {
                     scoreB = -10000;
@@ -602,7 +619,10 @@ class IQGeoVSCode {
                     return a.name.localeCompare(b.name);
                 }
 
-                return scoreB - scoreB;
+                if (scoreA > scoreB) {
+                    return -1;
+                }
+                return 1;
             }
 
             return orderA - orderB;
@@ -610,11 +630,13 @@ class IQGeoVSCode {
     }
 
     _sortPathSymbols(query, symbols) {
+        const reg = this._matchScoreReg(query);
+
         symbols.sort((a, b) => {
-            const scoreClassA = this._matchScore(a._className, query) ?? -10000;
-            const scoreFileA = this._matchScore(a._fileName.split('.')[0], query) ?? -10000;
-            const scoreClassB = this._matchScore(b._className, query) ?? -10000;
-            const scoreFileB = this._matchScore(b._fileName.split('.')[0], query) ?? -10000;
+            const scoreClassA = this._matchScore(a._className, query, reg) ?? -10000;
+            const scoreFileA = this._matchScore(a._fileName.split('.')[0], query, reg) ?? -10000;
+            const scoreClassB = this._matchScore(b._className, query, reg) ?? -10000;
+            const scoreFileB = this._matchScore(b._fileName.split('.')[0], query, reg) ?? -10000;
 
             const scoreA = Math.max(scoreClassA, scoreFileA);
             const scoreB = Math.max(scoreClassB, scoreFileB);
