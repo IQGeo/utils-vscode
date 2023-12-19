@@ -1,19 +1,6 @@
-<style>
-    .heading-container {
-        display: flex;
-        align-items: center;
-        column-gap: 15px;
-    }
-    .heading {
-        border-bottom: 0;
-        margin-top: 0.3em;
-        margin-bottom: 0;
-    }
-</style>
-
-<div class="heading-container">
+<div style="display: flex; align-items: center; column-gap: 15px;">
     <img src="./images/iqgeo_logo.png"/>
-    <h1 class="heading">IQGeo VS Code Utils</h1>
+    <h1 style="border-bottom: 0; margin-top: 0.3em; margin-bottom: 0">IQGeo VS Code Utils</h1>
 </div>
 
 <br>
