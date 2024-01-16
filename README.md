@@ -30,7 +30,7 @@ Files are automatically rescanned when saved.
 ## Usage
 
 ### Definition Search
--   Search Definitions = **CMD + T** (**Alt + T**).<br>
+-   Search Definitions = **CMD + T** (**Ctrl + T**).<br>
     The search supports \<method name\> or \<class name\> or \<class\>.\<method\><br>
     Use \<class name\>. to list all functions for a class.<br>
     Use @\<partial path\> to list classes matching the path.<br>
@@ -39,7 +39,7 @@ Files are automatically rescanned when saved.
 
     Use the up and down arrows in the search result list to update the preview.
 
--   Scan Files (IQGeo Refresh Symbols) = **Ctrl + T**<br>
+-   Scan Files (IQGeo Refresh Symbols) = **Ctrl + T** (**Alt + T**)<br>
     (e.g. after changing branch)
 
 ### Text Search
@@ -50,15 +50,16 @@ Files are automatically rescanned when saved.
 -   Open Editor Search with current selection or word = **Ctrl + G** (**Alt + G**)
 
 ### Navigation
--   Go to Definition = **CMD + Right** (**Ctrl + Right**)
+-   Go to Definition = **CMD + .** (**Alt + .**)
 
--   Go Back = **CMD + Left** (**Ctrl + Left**)
+-   Go Back = **Ctrl + CMD + Left** (**Alt + Left**)
 
--   Definition search with current selection or word = **OPT + Up** (**Ctrl + Up**)
+-   Definition search with current selection or word = **CMD + ;** (**Ctrl + ;**)
 
--   Peek Definition = **OPT + Down** (**Ctrl + Down**)
+-   Peek Definition = **Ctrl + .**
 
--   Go Forward = **Shift + CMD + Right** (**Shift + Ctrl + Right**)
+-   Go to References = **CMD + ,** (**Alt + ,**)
+
 
 <br>
 

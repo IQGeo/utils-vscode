@@ -55,15 +55,20 @@
         "keybindings": [
             {
                 "command": "iqgeo.refreshSymbols",
-                "key": "ctrl+t"
+                "key": "alt+t"
             },
             {
                 "command": "iqgeo.searchSymbols",
-                "key": "alt+t",
-                "when": "sideBarVisible",
+                "key": "ctrl+t",
+                "when": "sideBarVisible && !isMac",
                 "args": {
                     "sideBarVisible": true
                 }
+            },
+            {
+                "command": "iqgeo.refreshSymbols",
+                "key": "ctrl+t",
+                "when": "isMac"
             },
             {
                 "command": "iqgeo.searchSymbols",
@@ -73,9 +78,10 @@
                     "sideBarVisible": true
                 }
             },
+
             {
                 "command": "iqgeo.searchSymbols",
-                "key": "ctrl+up",
+                "key": "ctrl+;",
                 "when": "sideBarVisible && editorTextFocus",
                 "args": {
                     "sideBarVisible": true,
@@ -84,13 +90,14 @@
             },
             {
                 "command": "iqgeo.searchSymbols",
-                "key": "option+up",
+                "key": "cmd+;",
                 "when": "sideBarVisible && editorTextFocus",
                 "args": {
                     "sideBarVisible": true,
                     "currentWord": true
                 }
             },
+
             {
                 "command": "iqgeo.searchEditor",
                 "key": "alt+g"
@@ -100,29 +107,32 @@
                 "key": "ctrl+g",
                 "when": "isMac"
             },
+
             {
-                "command": "editor.action.peekDefinition",
-                "key": "ctrl+down",
+                "command": "editor.action.referenceSearch.trigger",
+                "key": "ctrl+oem_comma",
                 "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
             },
             {
                 "command": "editor.action.peekDefinition",
-                "key": "option+down",
+                "key": "ctrl+.",
                 "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
             },
+
             {
                 "command": "iqgeo.searchSymbols",
-                "key": "alt+t",
-                "when": "!sideBarVisible"
+                "key": "ctrl+t",
+                "when": "!sideBarVisible && !isMac"
             },
             {
                 "command": "iqgeo.searchSymbols",
                 "key": "cmd+t",
                 "when": "!sideBarVisible"
             },
+
             {
                 "command": "iqgeo.searchSymbols",
-                "key": "ctrl+up",
+                "key": "ctrl+;",
                 "when": "!sideBarVisible && editorTextFocus",
                 "args": {
                     "currentWord": true
@@ -130,48 +140,39 @@
             },
             {
                 "command": "iqgeo.searchSymbols",
-                "key": "option+up",
+                "key": "cmd+;",
                 "when": "!sideBarVisible && editorTextFocus",
                 "args": {
                     "currentWord": true
                 }
             },
+
             {
-                "key": "ctrl+down",
-                "command": "editor.action.peekDefinition",
-                "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
-            },
-            {
-                "key": "option+down",
-                "command": "editor.action.peekDefinition",
-                "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
-            },
-            {
-                "key": "ctrl+left",
+                "key": "ctrl+cmd+left",
                 "command": "workbench.action.navigateBack"
             },
+
             {
-                "key": "cmd+left",
-                "command": "workbench.action.navigateBack"
+                "key": "alt+oem_comma",
+                "command": "editor.action.goToReferences",
+                "when": "editorTextFocus && !isInEmbeddedEditor"
             },
             {
-                "key": "cmd+right",
+                "key": "cmd+oem_comma",
+                "command": "editor.action.goToReferences",
+                "when": "editorTextFocus && !isInEmbeddedEditor"
+            },
+            {
+                "key": "alt+.",
                 "command": "iqgeo.goToDefinition",
                 "when": "editorTextFocus && !isInEmbeddedEditor"
             },
             {
-                "key": "ctrl+right",
+                "key": "cmd+.",
                 "command": "iqgeo.goToDefinition",
                 "when": "editorTextFocus && !isInEmbeddedEditor"
             },
-            {
-                "key": "shift+ctrl+right",
-                "command": "workbench.action.navigateForward"
-            },
-            {
-                "key": "shift+cmd+right",
-                "command": "workbench.action.navigateForward"
-            },
+
             {
                 "command": "iqgeo.searchRoot",
                 "key": "ctrl+g",
@@ -199,6 +200,7 @@
                 "command": "-jupyter.refreshDataViewer",
                 "when": "isWorkspaceTrusted && jupyter.dataViewerActive"
             },
+
             {
                 "command": "iqgeo.goToPreviousSymbol",
                 "key": "ctrl+pageup"
@@ -231,6 +233,7 @@
                 "command": "iqgeo.goToNextSymbol",
                 "key": "cmd+numpad_add"
             },
+
             {
                 "command": "workbench.files.action.showActiveFileInExplorer",
                 "key": "ctrl+e",
@@ -241,6 +244,7 @@
                 "key": "cmd+e",
                 "when": "editorTextFocus"
             },
+
             {
                 "command": "workbench.action.terminal.focus",
                 "key": "ctrl+'",
