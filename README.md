@@ -1,5 +1,5 @@
 <div style="display: flex; align-items: center; column-gap: 15px;">
-    <img src="./images/iqgeo_logo.png"/>
+    <img src="images/iqgeo_logo.png"/>
     <h1 style="border-bottom: 0; margin-top: 0.3em; margin-bottom: 0">IQGeo VS Code Utils</h1>
 </div>
 
@@ -15,7 +15,7 @@ The extension provides the following features:
     -   \<class name\>.\<method name\>
     -   @\<path name\>
 
-<img src="./images/def_search_app.png" width="850"/>
+<img src="images/def_search_app.png" width="850"/>
 
 2. Enhanced navigation to the definitions using the standard commands in VS Code. (e.g. Go to Definition, Peek Definition, Go to Symbol, ...).<br>
 
