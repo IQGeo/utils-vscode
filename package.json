@@ -1,0 +1,325 @@
+{
+    "name": "iqgeo-utils-vscode",
+    "displayName": "IQGeo Utils",
+    "description": "IQGeo development extension to support code navigation and additional linting",
+    "publisher": "IQGeo",
+    "license": "MIT",
+    "repository": "https://github.com/IQGeo/utils-vscode",
+    "version": "1.0.0",
+    "icon": "images/iqgeo_logo.png",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./src/main",
+    "contributes": {
+        "commands": [
+            {
+                "command": "iqgeo.refreshSymbols",
+                "title": "IQGeo Refresh Symbols"
+            },
+            {
+                "command": "iqgeo.searchSymbols",
+                "title": "IQGeo Search Symbols"
+            },
+            {
+                "command": "iqgeo.goToDefinition",
+                "title": "IQGeo Go To Definition"
+            },
+            {
+                "command": "iqgeo.searchRoot",
+                "title": "IQGeo Search"
+            },
+            {
+                "command": "iqgeo.searchWorkspace",
+                "title": "IQGeo Search Workspace"
+            },
+            {
+                "command": "iqgeo.searchEditor",
+                "title": "IQGeo Open Search Editor"
+            },
+            {
+                "command": "iqgeo.goToPreviousSymbol",
+                "title": "IQGeo Go To Previous Symbol"
+            },
+            {
+                "command": "iqgeo.goToNextSymbol",
+                "title": "IQGeo Go To Next Symbol"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "iqgeo.refreshSymbols",
+                "key": "alt+t"
+            },
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "ctrl+t",
+                "when": "sideBarVisible && !isMac",
+                "args": {
+                    "sideBarVisible": true
+                }
+            },
+            {
+                "command": "iqgeo.refreshSymbols",
+                "key": "ctrl+t",
+                "when": "isMac"
+            },
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "cmd+t",
+                "when": "sideBarVisible",
+                "args": {
+                    "sideBarVisible": true
+                }
+            },
+
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "ctrl+;",
+                "when": "sideBarVisible && editorTextFocus",
+                "args": {
+                    "sideBarVisible": true,
+                    "currentWord": true
+                }
+            },
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "cmd+;",
+                "when": "sideBarVisible && editorTextFocus",
+                "args": {
+                    "sideBarVisible": true,
+                    "currentWord": true
+                }
+            },
+
+            {
+                "command": "iqgeo.searchEditor",
+                "key": "alt+g"
+            },
+            {
+                "command": "iqgeo.searchEditor",
+                "key": "ctrl+g",
+                "when": "isMac"
+            },
+
+            {
+                "command": "editor.action.referenceSearch.trigger",
+                "key": "ctrl+oem_comma",
+                "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
+            },
+            {
+                "command": "editor.action.peekDefinition",
+                "key": "ctrl+.",
+                "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
+            },
+
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "ctrl+t",
+                "when": "!sideBarVisible && !isMac"
+            },
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "cmd+t",
+                "when": "!sideBarVisible"
+            },
+
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "ctrl+;",
+                "when": "!sideBarVisible && editorTextFocus",
+                "args": {
+                    "currentWord": true
+                }
+            },
+            {
+                "command": "iqgeo.searchSymbols",
+                "key": "cmd+;",
+                "when": "!sideBarVisible && editorTextFocus",
+                "args": {
+                    "currentWord": true
+                }
+            },
+
+            {
+                "key": "ctrl+cmd+left",
+                "command": "workbench.action.navigateBack"
+            },
+
+            {
+                "key": "alt+oem_comma",
+                "command": "editor.action.goToReferences",
+                "when": "editorTextFocus && !isInEmbeddedEditor"
+            },
+            {
+                "key": "cmd+oem_comma",
+                "command": "editor.action.goToReferences",
+                "when": "editorTextFocus && !isInEmbeddedEditor"
+            },
+            {
+                "key": "alt+.",
+                "command": "iqgeo.goToDefinition",
+                "when": "editorTextFocus && !isInEmbeddedEditor"
+            },
+            {
+                "key": "cmd+.",
+                "command": "iqgeo.goToDefinition",
+                "when": "editorTextFocus && !isInEmbeddedEditor"
+            },
+
+            {
+                "command": "iqgeo.searchRoot",
+                "key": "ctrl+g",
+                "when": "!isMac"
+            },
+            {
+                "command": "iqgeo.searchRoot",
+                "key": "cmd+g"
+            },
+            {
+                "command": "iqgeo.searchWorkspace",
+                "key": "ctrl+r"
+            },
+            {
+                "command": "iqgeo.searchWorkspace",
+                "key": "cmd+r"
+            },
+            {
+                "key": "cmd+r",
+                "command": "-workbench.action.reloadWindow",
+                "when": "isDevelopment"
+            },
+            {
+                "key": "cmd+r",
+                "command": "-jupyter.refreshDataViewer",
+                "when": "isWorkspaceTrusted && jupyter.dataViewerActive"
+            },
+
+            {
+                "command": "iqgeo.goToPreviousSymbol",
+                "key": "ctrl+pageup"
+            },
+            {
+                "command": "iqgeo.goToPreviousSymbol",
+                "key": "ctrl+numpad_subtract"
+            },
+            {
+                "command": "iqgeo.goToPreviousSymbol",
+                "key": "cmd+pageup"
+            },
+            {
+                "command": "iqgeo.goToPreviousSymbol",
+                "key": "cmd+numpad_subtract"
+            },
+            {
+                "command": "iqgeo.goToNextSymbol",
+                "key": "ctrl+pagedown"
+            },
+            {
+                "command": "iqgeo.goToNextSymbol",
+                "key": "ctrl+numpad_add"
+            },
+            {
+                "command": "iqgeo.goToNextSymbol",
+                "key": "cmd+pagedown"
+            },
+            {
+                "command": "iqgeo.goToNextSymbol",
+                "key": "cmd+numpad_add"
+            },
+
+            {
+                "command": "workbench.files.action.showActiveFileInExplorer",
+                "key": "ctrl+e",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "workbench.files.action.showActiveFileInExplorer",
+                "key": "cmd+e",
+                "when": "editorTextFocus"
+            },
+
+            {
+                "command": "workbench.action.terminal.focus",
+                "key": "ctrl+'",
+                "when": "!isMac && editorTextFocus"
+            },
+            {
+                "command": "workbench.action.focusActiveEditorGroup",
+                "key": "ctrl+'",
+                "when": "!isMac && !editorTextFocus"
+            },
+            {
+                "command": "workbench.action.terminal.focus",
+                "key": "cmd+'",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "workbench.action.focusActiveEditorGroup",
+                "key": "cmd+'",
+                "when": "!editorTextFocus"
+            },
+            {
+                "command": "workbench.action.terminal.toggleTerminal",
+                "key": "alt+'"
+            },
+            {
+                "command": "workbench.action.terminal.toggleTerminal",
+                "key": "ctrl+'",
+                "when": "isMac"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "IQGeo configuration",
+            "properties": {
+                "iqgeo-utils-vscode.searchPaths": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Search paths for JS and Python definitions. Use ; to separate paths."
+                },
+                "iqgeo-utils-vscode.maxSearchResults": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Maximum number of definition search results to display."
+                },
+                "iqgeo-utils-vscode.enableSearchPreview": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Show a preview of the active result in the search list."
+                },
+                "iqgeo-utils-vscode.enableLinting": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable API and subclassing linting."
+                },
+                "iqgeo-utils-vscode.enableMethodCheck": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable checking whether method call names exist. Only has an effect if enableLinting is true."
+                },
+                "iqgeo-utils-vscode.searchSummary": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Output search information to the console."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "lint": "eslint \"./src/**/*.js\"",
+        "lint:fix": "npm run lint -- --fix"
+    },
+    "dependencies": {
+        "findit": "^2.0.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.51.0"
+    }
+}
