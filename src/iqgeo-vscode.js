@@ -741,8 +741,7 @@ class IQGeoVSCode {
                         symbols,
                         doneMethods,
                         methodMatchType,
-                        max,
-                        1
+                        max
                     );
                 } else {
                     this._findMethods(
@@ -753,8 +752,7 @@ class IQGeoVSCode {
                         doneMethods,
                         checkParents,
                         methodMatchType,
-                        max,
-                        1
+                        max
                     );
                 }
 

@@ -238,7 +238,7 @@ class IQGeoSearch {
                 searchClasses: true,
                 searchAll: true,
             });
-            const list = this._getSearchList(symbols, true);
+            const list = this._getSearchList(symbols);
 
             this._symbolSelector.items = list;
         } else {
