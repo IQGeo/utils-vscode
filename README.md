@@ -10,10 +10,10 @@ The extension provides the following features:
 
 1. An alternative definition search dialog that shows a preview of the highlighted result in an editor.<br>
     The search supports JavaScript and Python and accepts these query formats:
-    -   \<method name\>
-    -   \<class name\>
-    -   \<class name\>.\<method name\>
-    -   @\<path name\>
+    - \<method name\>
+    - \<class name\>
+    - \<class name\>.\<method name\>
+    - @\<path name\>
 
 <img src="images/def_search_app.png" width="850"/>
 
@@ -21,7 +21,11 @@ The extension provides the following features:
 
 3. Linting for API usage and subclassing.
 
-4. Set of shortcuts for definition search, code navigation and text search.
+4. Set of shortcuts for
+    - Definition search
+    - Code navigation
+    - Text search
+    - Workspace layouts
 
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
@@ -75,6 +79,17 @@ Files are automatically rescanned when saved.
 
 -   Toggle terminal visibility = **Ctrl + '** (**Alt + '**)
 
+### Layouts
+Shortcuts to control the layout of the workspace
+-   **Ctrl + 1** = Sidebar + Editor + Terminal
+-   **Ctrl + 2** = Editor + Terminal
+-   **Ctrl + 3** = Sidebar + Editor
+-   **Ctrl + 4** = Explorer + Editor
+-   **Ctrl + 5** = Source Control + Editor
+-   **Ctrl + 6** = Editor + Terminal Right
+-   **Ctrl + 7** = Editor
+-   **Ctrl + 8** = Maximise Editor Group
+
 ## Extension Settings
 
 -   Search paths for JS and Python definitions. Use ; to separate paths. (Default value is the VS Code workspace folder path)
@@ -93,8 +108,18 @@ Files are automatically rescanned when saved.
     ```json
     "iqgeo-utils-vscode.enableLinting": true
     ```
+-   Defines whether workspace layout shortcuts are enabled. (Default value is true)
+    ```json
+    "iqgeo-utils-vscode.enableLayouts": true
+    ```
 
 ## Release Notes
+
+### 1.0.2
+-   Add workspace layout shortcuts.
+
+### 1.0.1
+-   Update readme images and fix license date.
 
 ### 1.0.0
 -   Initial release of iqgeo-utils-vscode to support code navigation and linting.

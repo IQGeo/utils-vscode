@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.80.0"
@@ -246,25 +246,38 @@
             },
 
             {
-                "command": "workbench.action.terminal.focus",
+                "command": "iqgeo.toggleTerminalFocus",
                 "key": "ctrl+'",
-                "when": "!isMac && editorTextFocus"
+                "when": "!isMac && editorTextFocus",
+                "args": {
+                    "editorFocus": true
+                }
             },
             {
-                "command": "workbench.action.focusActiveEditorGroup",
+                "command": "iqgeo.toggleTerminalFocus",
                 "key": "ctrl+'",
-                "when": "!isMac && !editorTextFocus"
+                "when": "!isMac && !editorTextFocus",
+                "args": {
+                    "editorFocus": false
+                }
             },
             {
-                "command": "workbench.action.terminal.focus",
+                "command": "iqgeo.toggleTerminalFocus",
                 "key": "cmd+'",
-                "when": "editorTextFocus"
+                "when": "editorTextFocus",
+                "args": {
+                    "editorFocus": true
+                }
             },
             {
-                "command": "workbench.action.focusActiveEditorGroup",
+                "command": "iqgeo.toggleTerminalFocus",
                 "key": "cmd+'",
-                "when": "!editorTextFocus"
+                "when": "!editorTextFocus",
+                "args": {
+                    "editorFocus": false
+                }
             },
+
             {
                 "command": "workbench.action.terminal.toggleTerminal",
                 "key": "alt+'"
@@ -273,6 +286,39 @@
                 "command": "workbench.action.terminal.toggleTerminal",
                 "key": "ctrl+'",
                 "when": "isMac"
+            },
+
+            {
+                "key": "ctrl+1",
+                "command": "iqgeo.sidebarAndEditorAndTerminal"
+            },
+            {
+                "key": "ctrl+2",
+                "command": "iqgeo.editorAndTerminal"
+            },
+            {
+                "key": "ctrl+3",
+                "command": "iqgeo.sidebarAndEditor"
+            },
+            {
+                "key": "ctrl+4",
+                "command": "iqgeo.explorerAndEditor"
+            },
+            {
+                "key": "ctrl+5",
+                "command": "iqgeo.sourceControlAndEditor"
+            },
+            {
+                "key": "ctrl+6",
+                "command": "iqgeo.editorAndTerminalRight"
+            },
+            {
+                "key": "ctrl+7",
+                "command": "iqgeo.editorOnly"
+            },
+            {
+                "key": "ctrl+8",
+                "command": "iqgeo.editorGroup"
             }
         ],
         "configuration": {
@@ -308,6 +354,16 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Output search information to the console."
+                },
+                "iqgeo-utils-vscode.enableLayouts": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable workspace layout shortcuts."
+                },
+                "iqgeo-utils-vscode.resizeTerminal": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable resizing of the terminal when using the command iqgeo.toggleTerminalFocus"
                 }
             }
         }
