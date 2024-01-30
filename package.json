@@ -54,6 +54,10 @@
             {
                 "command": "iqgeo.goToNextSymbol",
                 "title": "IQGeo Go To Next Symbol"
+            },
+            {
+                "command": "iqgeo.updateDockerfiles",
+                "title": "IQGeo Update Project from .iqgeorc.json"
             }
         ],
         "keybindings": [
