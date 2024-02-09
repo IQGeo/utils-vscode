@@ -17,9 +17,6 @@ const IGNORE_DIRS = [
     '.vscode',
     'node_modules',
     'doc',
-    'images',
-    'locales',
-    // 'vscode',
     'coverage',
     'bundles',
     'Doc',
@@ -46,6 +43,7 @@ class IQGeoVSCode {
         this.exportedFunctions = new Map();
         this.esClasses = [];
         this.rootFolders = [];
+        this.allFiles = new Set();
 
         this.debug = DEBUG;
 
@@ -111,14 +109,16 @@ class IQGeoVSCode {
             vscode.SymbolKind.Variable,
             vscode.SymbolKind.Method,
             vscode.SymbolKind.Function,
+            vscode.SymbolKind.File,
         ];
         this.symbolIcons = {};
-        this.symbolIcons[vscode.SymbolKind.Method] = 'symbol-method';
-        this.symbolIcons[vscode.SymbolKind.Function] = 'symbol-method';
-        this.symbolIcons[vscode.SymbolKind.Variable] = 'symbol-variable';
         this.symbolIcons[vscode.SymbolKind.Class] = 'symbol-class';
         this.symbolIcons[vscode.SymbolKind.Constant] = 'symbol-constant';
         this.symbolIcons[vscode.SymbolKind.Property] = 'symbol-property';
+        this.symbolIcons[vscode.SymbolKind.Variable] = 'symbol-variable';
+        this.symbolIcons[vscode.SymbolKind.Method] = 'symbol-method';
+        this.symbolIcons[vscode.SymbolKind.Function] = 'symbol-method';
+        this.symbolIcons[vscode.SymbolKind.File] = 'symbol-file';
     }
 
     // Find JS location only
@@ -370,18 +370,75 @@ class IQGeoVSCode {
         return sym;
     }
 
-    _isLazyMatch(string, query) {
+    getFileSymbol(fileName) {
+        const name = path.basename(fileName);
+        const kind = vscode.SymbolKind.File;
+        const loc = new vscode.Location(vscode.Uri.file(fileName), new vscode.Position(0, 0));
+        const sym = new vscode.SymbolInformation(name, kind, undefined, loc);
+
+        sym._fileName = fileName;
+        sym._icon = this._getIcon(kind);
+        sym._order = this.symbolOrder.indexOf(kind);
+
+        return sym;
+    }
+
+    _isLazyMatch(string, query, consecutive = false) {
         const { length } = query;
         if (length === 0) return true; // special case to match all
         if (length > string.length) return false;
 
         const chars = query.split('');
-        const last = chars.pop();
-        const str = chars.map((c) => `${c}([^${c}]*?)`).join('') + last;
-        const reg = new RegExp(str, 'g');
+        let last = chars.pop();
+        if (last === '.') last = '\\.';
+
+        const groupsStr =
+            chars
+                .map((c) => {
+                    const c1 = c === '.' ? '\\.' : c;
+                    return `${c1}([^${c}]*?)`;
+                })
+                .join('') + last;
+        const groupsReg = new RegExp(groupsStr, 'g');
+
+        if (consecutive) {
+            const str =
+                chars
+                    .map((c) => {
+                        const c1 = c === '.' ? '\\.' : c;
+                        return `${c1}[^${c}]*?`;
+                    })
+                    .join('') + last;
+            const reg = new RegExp(str, 'g');
+
+            const allMatches = string.match(reg) || [];
+
+            if (allMatches.length === 0) return false;
+
+            allMatches.sort((a, b) => a.length - b.length);
+
+            // Check all characters are consecutive (with at least 1 other) in the shortest match of the query.
+            const gaps = [];
+            for (const match of allMatches[0].matchAll(groupsReg)) {
+                for (const str of match) {
+                    if (str === '.') {
+                        gaps.push(0);
+                    } else {
+                        gaps.push(str.length);
+                    }
+                }
+            }
+            gaps.shift();
+
+            if (gaps[0] > 0 || gaps[gaps.length - 1] > 0) return false;
+            for (let i = 1; i < gaps.length - 1; i++) {
+                if (gaps[i] > 0 && gaps[i + 1] > 0) return false;
+            }
+            return true;
+        }
 
         // Matches all characters of query in order and at least 2 characters are consecutive.
-        for (const match of string.matchAll(reg)) {
+        for (const match of string.matchAll(groupsReg)) {
             for (const str of match) {
                 if (str.length === 0) return true;
             }
@@ -393,7 +450,13 @@ class IQGeoVSCode {
     _matchScoreReg(query) {
         const chars = query.split('');
         const last = chars.pop();
-        const str = chars.map((c) => `${c}[^${c}]*?`).join('') + last;
+        const str =
+            chars
+                .map((c) => {
+                    const c1 = c === '.' ? '\\.' : c;
+                    return `${c1}[^${c}]*?`;
+                })
+                .join('') + last;
         return new RegExp(str, 'g');
     }
 
@@ -413,7 +476,7 @@ class IQGeoVSCode {
     _matchString(string, query, matchType) {
         const stringLC = string.toLowerCase();
         if (matchType === 0) {
-            return this._isLazyMatch(stringLC, query);
+            return this._isLazyMatch(stringLC, query, true);
         }
         if (matchType === 1) {
             return stringLC === query;
@@ -560,15 +623,18 @@ class IQGeoVSCode {
         }
     }
 
-    _findClassesFromPath(query, symbols, max) {
-        for (const [className, classData] of this.allClasses()) {
+    _findFiles(query, symbols, max) {
+        const symbolFileNames = symbols.map((sym) => sym._fileName);
+
+        for (const fileName of this.allFiles) {
             if (
-                this._matchString(className, query, 0) ||
-                this._matchString(classData.fileName.split('.')[0], query, 0)
+                !symbolFileNames.includes(fileName) &&
+                this._isLazyMatch(fileName.toLowerCase(), query, true)
             ) {
-                const sym = this.getClassSymbol(className, classData);
+                const sym = this.getFileSymbol(fileName);
 
                 symbols.push(sym);
+                symbolFileNames.push(fileName);
 
                 if (symbols.length === max) return;
             }
@@ -578,7 +644,7 @@ class IQGeoVSCode {
     _sortSymbols(classString, methodString, symbols) {
         const origQuery = classString ? `${classString}.${methodString}` : methodString;
         const reg = this._matchScoreReg(origQuery);
-        const methodReg = new RegExp(`^${methodString}(\\(\\))?$`, 'i')
+        const methodReg = new RegExp(`^${methodString}(\\(\\))?$`, 'i');
 
         symbols.sort((a, b) => {
             const orderA = a._order;
@@ -597,9 +663,10 @@ class IQGeoVSCode {
                         scoreA = this._matchScore(a._methodName, methodString, reg);
                     }
                 }
-                if (scoreA === undefined) {
-                    scoreA = -10000;
-                }
+                scoreA = Math.max(
+                    this._matchScore(a._fileName, origQuery, reg) ?? -10000,
+                    scoreA ?? -10000
+                );
 
                 if (classString) {
                     scoreB = this._matchScore(b.name, origQuery, reg);
@@ -611,9 +678,10 @@ class IQGeoVSCode {
                         scoreB = this._matchScore(b._methodName, methodString, reg);
                     }
                 }
-                if (scoreB === undefined) {
-                    scoreB = -10000;
-                }
+                scoreB = Math.max(
+                    this._matchScore(b._fileName, origQuery, reg) ?? -10000,
+                    scoreB ?? -10000
+                );
 
                 if (scoreA === scoreB) {
                     return a.name.localeCompare(b.name);
@@ -626,32 +694,6 @@ class IQGeoVSCode {
             }
 
             return orderA - orderB;
-        });
-    }
-
-    _sortPathSymbols(query, symbols) {
-        const reg = this._matchScoreReg(query);
-
-        symbols.sort((a, b) => {
-            const scoreClassA = this._matchScore(a._className, query, reg) ?? -10000;
-            const scoreFileA = this._matchScore(a._fileName.split('.')[0], query, reg) ?? -10000;
-            const scoreClassB = this._matchScore(b._className, query, reg) ?? -10000;
-            const scoreFileB = this._matchScore(b._fileName.split('.')[0], query, reg) ?? -10000;
-
-            const scoreA = Math.max(scoreClassA, scoreFileA);
-            const scoreB = Math.max(scoreClassB, scoreFileB);
-
-            if (scoreA === scoreB) {
-                if (scoreClassA > scoreFileA && scoreFileB > scoreClassB) {
-                    return -1;
-                }
-                if (scoreClassB > scoreFileB && scoreFileA > scoreClassA) {
-                    return 1;
-                }
-                return a.name.localeCompare(b.name);
-            }
-
-            return scoreB - scoreA;
         });
     }
 
@@ -678,19 +720,13 @@ class IQGeoVSCode {
         let classMatchType = 0;
         let methodMatchType = 0;
 
-        if (queryParts.length > 1) {
+        if (queryParts.length > 2) {
+            methodString = queryString;
+        } else if (queryParts.length > 1) {
             classString = queryParts[0];
             methodString = queryParts[1];
         } else {
             methodString = queryParts[0];
-        }
-
-        if (methodString[0] === '@') {
-            const symbols = [];
-            const pathString = methodString.substring(1, methodString.length);
-            this._findClassesFromPath(pathString, symbols, max);
-            this._sortPathSymbols(pathString, symbols);
-            return symbols;
         }
 
         if (classString) {
@@ -716,62 +752,65 @@ class IQGeoVSCode {
             methodString = methodString.substring(0, methodString.length - 1);
         }
 
-        if (classString?.length < 2 || (!classString && methodString < 2)) {
-            return [];
-        }
-
         const symbols = [];
-        const doneMethods = [];
-        const checkParents = classString && !localOnly;
-        const includeESOutside = this._includeESOutsideWorkspace();
 
-        for (const [className, classData] of this.allClasses()) {
-            if (!languageIds.includes(classData.languageId)) continue;
+        if (queryParts.length < 3 && (classString?.length > 1 || methodString.length > 1)) {
+            const doneMethods = [];
+            const checkParents = classString && !localOnly;
+            const includeESOutside = this._includeESOutsideWorkspace();
 
-            if (
-                (classString && this._matchString(className, classString, classMatchType)) ||
-                (!classString &&
-                    (searchAll || !classData.es || (includeESOutside && !classData.workspace)))
-            ) {
-                if (inheritOnly) {
-                    this._findInheritedMethods(
-                        className,
-                        methodString,
-                        classData.languageId,
-                        symbols,
-                        doneMethods,
-                        methodMatchType,
-                        max
-                    );
-                } else {
-                    this._findMethods(
-                        className,
-                        methodString,
-                        classData.languageId,
-                        symbols,
-                        doneMethods,
-                        checkParents,
-                        methodMatchType,
-                        max
-                    );
+            for (const [className, classData] of this.allClasses()) {
+                if (!languageIds.includes(classData.languageId)) continue;
+
+                if (
+                    (classString && this._matchString(className, classString, classMatchType)) ||
+                    (!classString &&
+                        (searchAll || !classData.es || (includeESOutside && !classData.workspace)))
+                ) {
+                    if (inheritOnly) {
+                        this._findInheritedMethods(
+                            className,
+                            methodString,
+                            classData.languageId,
+                            symbols,
+                            doneMethods,
+                            methodMatchType,
+                            max
+                        );
+                    } else {
+                        this._findMethods(
+                            className,
+                            methodString,
+                            classData.languageId,
+                            symbols,
+                            doneMethods,
+                            checkParents,
+                            methodMatchType,
+                            max
+                        );
+                    }
+
+                    if (symbols.length >= max) break;
                 }
+            }
 
-                if (symbols.length >= max) break;
+            if (searchClasses && !classString && symbols.length < max) {
+                this._findClasses(methodString, symbols, methodMatchType, max, {
+                    searchAll,
+                    languageIds,
+                });
+            }
+
+            if (!classString && symbols.length < max) {
+                this._findExported(methodString, symbols, methodMatchType, max, {
+                    searchAll,
+                    languageIds,
+                });
             }
         }
 
-        if (searchClasses && !classString && symbols.length < max) {
-            this._findClasses(methodString, symbols, methodMatchType, max, {
-                searchAll,
-                languageIds,
-            });
-        }
-
-        if (!classString && symbols.length < max) {
-            this._findExported(methodString, symbols, methodMatchType, max, {
-                searchAll,
-                languageIds,
-            });
+        if (searchAll && queryString.length > 2 && symbols.length < max) {
+            this._findFiles(queryString, symbols, max);
         }
 
         this._sortSymbols(classString, methodString, symbols);
@@ -790,6 +829,7 @@ class IQGeoVSCode {
         this.exportedFunctions = new Map();
         this.esClasses = [];
         this.rootFolders = [];
+        this.allFiles = new Set();
 
         for (const searchDir of this._getSearchPaths()) {
             const startTime = new Date().getTime();
@@ -807,8 +847,8 @@ class IQGeoVSCode {
 
                 finder.on('file', (file) => {
                     const parts = path.basename(file).split('.');
-                    if (parts.length === 2 && parts[0] !== '__init__') {
-                        const ext = parts[1];
+                    if (parts[0] !== '__init__') {
+                        const ext = parts[parts.length - 1];
                         for (const config of this._languageConfig) {
                             if (config.extension === ext) {
                                 nFiles++;
@@ -817,6 +857,7 @@ class IQGeoVSCode {
                                 break;
                             }
                         }
+                        this.allFiles.add(file);
                     }
                 });
 

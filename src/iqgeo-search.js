@@ -1,5 +1,15 @@
 const vscode = require('vscode'); // eslint-disable-line
+const fs = require('fs');
+const path = require('path');
 const Utils = require('./utils');
+
+const LANGUAGE_MAP = {
+    'js': 'javascript',
+    'py': 'python',
+    'yml': 'yaml',
+    'md': 'markdown',
+    'txt': 'plaintext',
+};
 
 class IQGeoSearch {
     constructor(iqgeoVSCode, context) {
@@ -10,6 +20,8 @@ class IQGeoSearch {
         this._lastGoToRange = undefined;
         this._viewColumn = undefined;
         this._sideBarVisible = false;
+        this._fileIconConfig = undefined;
+        this._fileIconCache = {};
 
         vscode.window.onDidChangeActiveTextEditor((editor) => {
             this._viewColumn = editor?.viewColumn;
@@ -211,13 +223,24 @@ class IQGeoSearch {
                 this._symbolSelectorActive = false;
                 const selection = this._symbolSelector.selectedItems;
                 if (selection.length > 0) {
-                    if (this._previewColumn() !== this._viewColumn) {
-                        // Close the preview and open in column with prvious focus
-                        this._closeSymbolPreview();
-                    } else {
+                    if (
+                        vscode.workspace.getConfiguration('iqgeo-utils-vscode')
+                            .openSearchResultAtPreview
+                    ) {
                         this._previewSymbol = undefined;
+                        this._goToSymbol(selection[0].symbol, {
+                            viewColumn: this._previewColumn(),
+                            preview: false,
+                        });
+                    } else {
+                        if (this._previewColumn() !== this._viewColumn) {
+                            // Close the preview and open symbol in active editor group.
+                            this._closeSymbolPreview();
+                        } else {
+                            this._previewSymbol = undefined;
+                        }
+                        this._goToSymbol(selection[0].symbol, {});
                     }
-                    this._goToSymbol(selection[0].symbol, {});
                 }
             });
 
@@ -252,10 +275,26 @@ class IQGeoSearch {
 
         for (let index = 0; index < symbolsLength; index++) {
             const sym = symbols[index];
-            const name = sym.name.replace(/\./g, '\u2009.\u2009');
-            const label = `$(${sym._icon}) ${name}`;
-            let description = sym._partialPath;
+            let label;
+            let iconPath;
 
+            if (sym.kind === vscode.SymbolKind.File) {
+                iconPath = this._getFileIcon(sym._fileName);
+                if (iconPath) {
+                    label = sym.name;
+                }
+            }
+
+            if (!label) {
+                const name =
+                    sym.kind === vscode.SymbolKind.File
+                        ? sym.name
+                        : sym.name.replace(/\./g, '\u2009.\u2009');
+
+                label = `$(${sym._icon}) ${name}`;
+            }
+
+            let description = sym._partialPath;
             if (!description) {
                 description = this._partialPath(sym._fileName);
                 sym._partialPath = description;
@@ -264,6 +303,7 @@ class IQGeoSearch {
             list.push({
                 label,
                 description,
+                iconPath,
                 alwaysShow: true,
                 symbol: sym,
             });
@@ -367,6 +407,65 @@ class IQGeoSearch {
                 }
             }
         }
+    }
+
+    _getFileIcon(fileName) {
+        if (this._fileIconConfig === undefined) {
+            this._fileIconConfig = null;
+
+            const extName = vscode.workspace.getConfiguration('workbench').iconTheme;
+            let ext = vscode.extensions.all.find(ext => ext.id.endsWith(extName));
+            if (!ext) {
+                ext = vscode.extensions.all.filter(ext => ext.isActive && ext.packageJSON.contributes.iconThemes)[0];
+            }
+
+            if (ext) {
+                try {
+                    let configPath = ext.packageJSON.contributes.iconThemes[0].path;
+                    configPath = path.join(ext.extensionPath, configPath);
+                    this._fileIconConfig = JSON.parse(fs.readFileSync(configPath).toString());
+                    this._fileIconConfig._configPath = path.dirname(configPath);
+                } catch (e) {
+                    console.log(e);
+                    return;
+                }
+            }
+        }
+
+        if (!this._fileIconConfig) return;
+
+        let key = path.basename(fileName);
+        let id = this._fileIconConfig.fileNames[key] ?? this._fileIconConfig.fileNames[key.toLowerCase()];
+        if (!id) {
+            const parts = key.split('.');
+            key = parts.length > 2 ? parts.slice(-2).join('.') : parts.slice(-1)[0];
+        }
+
+        let iconPath = this._fileIconCache[key];
+        if (iconPath !== undefined) return iconPath;
+
+        if (!id) {
+            id = this._fileIconConfig.fileExtensions[key];
+            if (!id) {
+                const langId = LANGUAGE_MAP[key] ?? key;
+                id = this._fileIconConfig.languageIds[langId] ?? key;
+            }
+        }
+
+        let iconDef = this._fileIconConfig.iconDefinitions[id];
+
+        if (!iconDef) {
+            // Use default file icon
+            iconDef = this._fileIconConfig.iconDefinitions[this._fileIconConfig.file];
+        }
+
+        if (iconDef) {
+            iconPath = path.join(this._fileIconConfig._configPath, iconDef.iconPath);
+            this._fileIconCache[key] = iconPath;
+            return iconPath;
+        }
+
+        this._fileIconCache[key] = null;
     }
 
     _partialPath(fileName) {
