@@ -5,10 +5,10 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "icon": "images/iqgeo_logo.png",
     "engines": {
-        "vscode": "^1.80.0"
+        "vscode": "^1.81.0"
     },
     "categories": [
         "Programming Languages"
@@ -339,6 +339,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Show a preview of the active result in the search list."
+                },
+                "iqgeo-utils-vscode.openSearchResultAtPreview": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Open the search result where the preview was displayed."
                 },
                 "iqgeo-utils-vscode.enableLinting": {
                     "type": "boolean",

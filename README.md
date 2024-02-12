@@ -13,7 +13,7 @@ The extension provides the following features:
     - \<method name\>
     - \<class name\>
     - \<class name\>.\<method name\>
-    - @\<path name\>
+    - \<file name\>
 
 <img src="images/def_search_app.png" width="850"/>
 
@@ -114,6 +114,10 @@ Shortcuts to control the layout of the workspace
     ```
 
 ## Release Notes
+
+### 1.0.3
+-   Search now includes files without need for @ at start of query.
+-   Improved file search.
 
 ### 1.0.2
 -   Add workspace layout shortcuts.
