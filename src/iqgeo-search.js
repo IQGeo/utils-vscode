@@ -41,7 +41,10 @@ class IQGeoSearch {
         );
 
         context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.searchEditor', () => this._runEditorSearch())
+            vscode.commands.registerCommand('iqgeo.searchEditor', () => {
+                const rootFolder = this.iqgeoVSCode.rootFolders[0];
+                this._runSearch(rootFolder, true);
+            })
         );
 
         context.subscriptions.push(
@@ -67,7 +70,7 @@ class IQGeoSearch {
         this._runSearch(workspaceFolder);
     }
 
-    _runSearch(folder) {
+    _runSearch(folder = undefined, inEditor = false) {
         let query = '';
 
         const editor = vscode.window.activeTextEditor;
@@ -80,29 +83,12 @@ class IQGeoSearch {
             }
         }
 
-        vscode.commands.executeCommand('workbench.action.findInFiles', {
+        const commandName = inEditor ? 'search.action.openEditor' : 'workbench.action.findInFiles';
+
+        vscode.commands.executeCommand(commandName, {
             query,
             filesToInclude: folder,
             filesToExclude: '*.txt, *.csv, *.svg, *.*_config, node_modules, bundles',
-        });
-    }
-
-    _runEditorSearch() {
-        let query = '';
-
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            query = Utils.selectedText();
-            if (!query) {
-                const doc = editor.document;
-                const pos = editor.selection.active;
-                query = Utils.currentWord(doc, pos);
-            }
-        }
-
-        vscode.commands.executeCommand('search.action.openEditor', {
-            query,
-            // filesToExclude: '*.txt, *.csv, *.svg, *.*_config, node_modules, bundles',
         });
     }
 
