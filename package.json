@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -30,6 +30,10 @@
             {
                 "command": "iqgeo.goToDefinition",
                 "title": "IQGeo Go To Definition"
+            },
+            {
+                "command": "iqgeo.addJSDoc",
+                "title": "IQGeo Add JSDoc"
             },
             {
                 "command": "iqgeo.searchRoot",
@@ -199,6 +203,16 @@
                 "key": "cmd+r",
                 "command": "-jupyter.refreshDataViewer",
                 "when": "isWorkspaceTrusted && jupyter.dataViewerActive"
+            },
+
+            {
+                "command": "iqgeo.addJSDoc",
+                "key": "cmd+d"
+            },
+            {
+                "command": "iqgeo.addJSDoc",
+                "key": "ctrl+d",
+                "when": "!isMac"
             },
 
             {
