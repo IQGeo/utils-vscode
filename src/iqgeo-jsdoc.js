@@ -56,7 +56,7 @@ class IQGeoJSDoc {
             const params = this._getParamsForSymbol(currentSym, docLines);
             const indent = docLines[symLine].match(/^\s*/)[0];
 
-            templateStr = `\n${indent}/**\n${indent} *\n`;
+            templateStr = `\n${indent}/**\n${indent} * \n`;
 
             params.forEach((name) => {
                 templateStr += `${indent} * @param {} ${name} - \n`;
@@ -70,11 +70,20 @@ class IQGeoJSDoc {
         }
 
         if (templateStr) {
+            // Insert the comment populated with params
             const edit = new vscode.WorkspaceEdit();
             const col = docLines[symLine - 1].length;
             const insertPos = new vscode.Position(symLine - 1, col);
             edit.insert(doc.uri, insertPos, templateStr);
             await vscode.workspace.applyEdit(edit);
+
+            // Move cursor to the first line in the comment
+            const newCol = doc.lineAt(symLine + 1).text.length;
+            const newPos = new vscode.Position(symLine + 1, newCol);
+            const newRange = new vscode.Range(newPos, newPos);
+            vscode.window.showTextDocument(doc.uri, {
+                selection: newRange,
+            });
         }
     }
 

@@ -27,6 +27,9 @@ The extension provides the following features:
     - Text search
     - Workspace layouts
 
+5. Command to create JSDoc comment for a function or class.<br>
+Press CMD+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters.
+
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
 Files are automatically rescanned when saved.
