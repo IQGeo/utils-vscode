@@ -45,7 +45,13 @@ class IQGeoJSDoc {
             }
 
             templateStr += `${indent} */`;
-        } else if ([vscode.SymbolKind.Function, vscode.SymbolKind.Method].includes(kind)) {
+        } else if (
+            [
+                vscode.SymbolKind.Function,
+                vscode.SymbolKind.Method,
+                vscode.SymbolKind.Property,
+            ].includes(kind)
+        ) {
             docLines = Utils.getDocLines(doc);
             const params = this._getParamsForSymbol(currentSym, docLines);
             const indent = docLines[symLine].match(/^\s*/)[0];
@@ -74,26 +80,41 @@ class IQGeoJSDoc {
 
     _getParamsForSymbol(sym, fileLines) {
         const symLine = sym.location.range.start.line;
-
-        const paramReg = /\(((\s*(\.\.\.)?(\{|\w+).*?,?)*)\)/;
         const length = Math.min(symLine + 16, fileLines.length);
+        const paramReg = /(?:\((.*?)\)\s+(?:\{|=>)|(\w+)\s*=>)/
         const paramNames = [];
-        let str = '';
 
-        for (let i = symLine; i < length; i++) {
-            str += fileLines[i];
-            const match = str.match(paramReg);
-            if (match) {
-                match[1].split(',').forEach((s) => {
-                    const name = s.split('=')[0].trim();
-                    if (name.startsWith('{')) {
-                        paramNames.push('{}');
-                    } else if (name.startsWith('...')) {
-                        paramNames.push(name.slice(3));
-                    } else if (name.length) {
-                        paramNames.push(name);
+        const addParams = (str, prefix = '') => {
+            const reg = /\s*(\{.*?\}|\w+\s*=\s*(".*?"|'.*?'|\[.*?\]|\{.*?\}|\w+)|\w+)(,|\s*$)/g;
+            let match;
+
+            while ((match = reg.exec(str))) {
+                const paramStr = match[1].trim();
+                if (paramStr.startsWith('{')) {
+                    const newStr = paramStr.slice(1, -1);
+                    paramNames.push(`${prefix}props`);
+                    addParams(newStr, `${prefix}props.`);
+                } else {
+                    const parts = paramStr.split('=');
+                    const name = parts[0].trim();
+                    if (name.startsWith('...')) {
+                        paramNames.push(`${prefix}${name.slice(3)}`);
+                    } else if (parts.length > 1) {
+                        paramNames.push(`[${prefix}${name}=${parts[1].trim()}]`);
+                    } else {
+                        paramNames.push(`${prefix}${name}`);
                     }
-                });
+                }
+            }
+        };
+
+        let testStr = '';
+        for (let i = symLine; i < length; i++) {
+            testStr += fileLines[i];
+
+            const paramMatch = testStr.match(paramReg);
+            if (paramMatch) {
+                addParams(paramMatch[1] ?? paramMatch[2]);
                 break;
             }
         }
