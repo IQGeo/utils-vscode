@@ -58,7 +58,7 @@ class IQGeoDockerfiles {
         update('.devcontainer/dockerfile', (config, content) => {
             const { modules, platform } = config;
 
-            replaceModuleInjection(content, modules, ({ version }) => !!version);
+            content = replaceModuleInjection(content, modules, true);
 
             content = content.replace(/platform-devenv:.*/, `platform-devenv:${platform.version}`);
             return content;
@@ -109,7 +109,7 @@ class IQGeoDockerfiles {
 
         update('deployment/dockerfile.build', (config, content) => {
             const { modules, platform } = config;
-            content = replaceModuleInjection(content, modules, ({ version, devOnly }) => version && !devOnly);
+            content = replaceModuleInjection(content, modules);
             content = content.replace(/platform-build:\S+/g, `platform-build:${platform.version}`);
             return content;
         });
@@ -181,17 +181,25 @@ function fileUpdater(root, config) {
     };
 }
 
-function replaceModuleInjection(content, modules, includefn) {
+function replaceModuleInjection(content, modules, isDevEnv = false) {
+    const isFromInjectorFn = ({ version, devSrc }) => version && !devSrc;
+    const filter1 = isDevEnv
+        ? isFromInjectorFn
+        : ({ version }) => !!version;
     const section1 = modules
-        .filter(includefn)
+        .filter(filter1)
         .map(({ name, version }) => `FROM \${CONTAINER_REGISTRY}${name}:${version} as ${name}`)
         .join('\n');
     content = content.replace(
-        /(# START SECTION Injector aliases.*)[\s\S]*?(# END SECTION)/,
+        /(# START SECTION Aliases for Injector images.*)[\s\S]*?(# END SECTION)/,
         `$1\n${section1}\n$2`
     );
+
+    const filter2 = isDevEnv 
+    ? isFromInjectorFn
+    : ({ devOnly }) => !devOnly;
     const section2 = modules
-        .filter(({ devOnly }) => !devOnly)
+        .filter(filter2)
         .map(({ name, version }) =>
             version
                 ? `COPY --link --from=${name} / \${MODULES}/`
