@@ -38,6 +38,7 @@ class IQGeoJSSearch {
     updateClasses(fileName, fileLines = undefined) {
         if (!fileLines) {
             fileLines = Utils.getFileLines(fileName);
+            if (!fileLines) return;
         }
 
         const len = fileLines.length;
