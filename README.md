@@ -27,6 +27,9 @@ The extension provides the following features:
     - Text search
     - Workspace layouts
 
+5. Command to create JSDoc comment for a function or class.<br>
+Press CMD+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters.
+
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
 Files are automatically rescanned when saved.
@@ -79,6 +82,9 @@ Files are automatically rescanned when saved.
 
 -   Toggle terminal visibility = **Ctrl + '** (**Alt + '**)
 
+### JS Doc
+-   Insert JS Doc for function or class definition = **CMD + D** (**Ctrl + D**)
+
 ### Layouts
 Shortcuts to control the layout of the workspace
 -   **Ctrl + 1** = Sidebar + Editor + Terminal
@@ -114,6 +120,9 @@ Shortcuts to control the layout of the workspace
     ```
 
 ## Release Notes
+
+### 1.0.4
+-   Added command to insert JS Doc for a function or class definition.
 
 ### 1.0.3
 -   Search now includes files without need for @ at start of query.

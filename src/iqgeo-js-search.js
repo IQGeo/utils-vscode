@@ -13,6 +13,7 @@ const MIXIN_REG = /(\w+(Mixin)?)\s*=\s*{/;
 const EXPORT_MIXIN_REG = /^export\s+(?:(?:default|const)\s+)*(\w+(Mixin)?)\s*=\s*{/;
 const CLASS_ASSIGN_REG = /(?:^|\s+)Object\.assign\(.*?(\w+)\.prototype,\s*(\w+)\)/;
 const PROPERTY_REG = /^\s*#?(\w+):/;
+const SETTER_OR_GETTER_REG = /^\s*(?:(?:set|get)\s+)(\w+)\s*\(/;
 const FUNCTION_REG = /^\s*(?:async\s+|static\s+|#)?\*?(\w+)\s*\(([\w,\s={}\[\]'"]|\.{3})*?\)\s*{/;
 const FUNCTION_MULTI_LINE_REG = /^\s*(async\s*|static\s*|#)?\*?\w+\s*\(\s*$/;
 const CONST_FUNCTION_REG = /^const\s+(\w+)\s*=\s*(?:async\s+)?function\*?\s*\(/;
@@ -34,8 +35,12 @@ class IQGeoJSSearch {
         this.iqgeoVSCode = iqgeoVSCode;
     }
 
-    updateClasses(fileName) {
-        const fileLines = Utils.getFileLines(fileName);
+    updateClasses(fileName, fileLines = undefined) {
+        if (!fileLines) {
+            fileLines = Utils.getFileLines(fileName);
+            if (!fileLines) return;
+        }
+
         const len = fileLines.length;
         const inWorkspace = this.iqgeoVSCode.isWorkspaceFile(fileName);
         let classFound = false; // debug flag
@@ -390,8 +395,12 @@ class IQGeoJSSearch {
     }
 
     _findPropertyDef(str) {
-        const match = str.match(PROPERTY_REG);
+        let match = str.match(PROPERTY_REG);
+        if (match) {
+            return match[1];
+        }
 
+        match = str.match(SETTER_OR_GETTER_REG);
         if (match) {
             return match[1];
         }

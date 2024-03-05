@@ -10,8 +10,12 @@ class IQGeoPythonSearch {
         this.iqgeoVSCode = iqgeoVSCode;
     }
 
-    updateClasses(fileName) {
-        const fileLines = Utils.getFileLines(fileName);
+    updateClasses(fileName, fileLines = undefined) {
+        if (!fileLines) {
+            fileLines = Utils.getFileLines(fileName);
+            if (!fileLines) return;
+        }
+
         const len = fileLines.length;
         const inWorkspace = this.iqgeoVSCode.isWorkspaceFile(fileName);
         let classFound = false; // debug flag

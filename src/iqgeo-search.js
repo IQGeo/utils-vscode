@@ -17,7 +17,6 @@ class IQGeoSearch {
 
         this._symbolSelector = undefined;
         this._lastQuery = '';
-        this._lastGoToRange = undefined;
         this._viewColumn = undefined;
         this._sideBarVisible = false;
         this._fileIconConfig = undefined;
@@ -42,7 +41,10 @@ class IQGeoSearch {
         );
 
         context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.searchEditor', () => this._runEditorSearch())
+            vscode.commands.registerCommand('iqgeo.searchEditor', () => {
+                const rootFolder = this.iqgeoVSCode.rootFolders[0];
+                this._runSearch(rootFolder, true);
+            })
         );
 
         context.subscriptions.push(
@@ -68,7 +70,7 @@ class IQGeoSearch {
         this._runSearch(workspaceFolder);
     }
 
-    _runSearch(folder) {
+    _runSearch(folder = undefined, inEditor = false) {
         let query = '';
 
         const editor = vscode.window.activeTextEditor;
@@ -81,29 +83,12 @@ class IQGeoSearch {
             }
         }
 
-        vscode.commands.executeCommand('workbench.action.findInFiles', {
+        const commandName = inEditor ? 'search.action.openEditor' : 'workbench.action.findInFiles';
+
+        vscode.commands.executeCommand(commandName, {
             query,
             filesToInclude: folder,
             filesToExclude: '*.txt, *.csv, *.svg, *.*_config, node_modules, bundles',
-        });
-    }
-
-    _runEditorSearch() {
-        let query = '';
-
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            query = Utils.selectedText();
-            if (!query) {
-                const doc = editor.document;
-                const pos = editor.selection.active;
-                query = Utils.currentWord(doc, pos);
-            }
-        }
-
-        vscode.commands.executeCommand('search.action.openEditor', {
-            query,
-            // filesToExclude: '*.txt, *.csv, *.svg, *.*_config, node_modules, bundles',
         });
     }
 
@@ -129,13 +114,12 @@ class IQGeoSearch {
                 }
                 this._lastQuery = newQuery;
             }
-        } else if (!Utils.rangesEqual(Utils.selectedRange(), this._lastGoToRange)) {
+        } else {
             const selection = Utils.selectedText();
             if (selection && selection !== '') {
                 newQuery = selection;
                 this._lastQuery = newQuery;
             }
-            this._lastGoToRange = undefined;
         }
 
         this._sideBarVisible = sideBarVisible;
@@ -275,22 +259,14 @@ class IQGeoSearch {
 
         for (let index = 0; index < symbolsLength; index++) {
             const sym = symbols[index];
+
+            const iconPath = this._getFileIcon(sym._fileName);
             let label;
-            let iconPath;
 
             if (sym.kind === vscode.SymbolKind.File) {
-                iconPath = this._getFileIcon(sym._fileName);
-                if (iconPath) {
-                    label = sym.name;
-                }
-            }
-
-            if (!label) {
-                const name =
-                    sym.kind === vscode.SymbolKind.File
-                        ? sym.name
-                        : sym.name.replace(/\./g, '\u2009.\u2009');
-
+                label = iconPath ? sym.name : `$(${sym._icon}) ${sym.name}`;
+            } else {
+                const name = sym.name.replace(/\./g, '\u2009.\u2009');
                 label = `$(${sym._icon}) ${name}`;
             }
 
@@ -323,37 +299,12 @@ class IQGeoSearch {
             preview = workbenchConfig.editor.enablePreviewFromCodeNavigation;
         }
 
-        this._lastGoToRange = symRange;
-
         vscode.window.showTextDocument(sym.location.uri, {
             selection: symRange,
             viewColumn,
             preview,
             preserveFocus,
         });
-    }
-
-    _getSymbolsForFile(fileName) {
-        const symbols = [];
-
-        for (const [className, classData] of this.iqgeoVSCode.allClasses()) {
-            if (classData.fileName === fileName) {
-                const classSym = this.iqgeoVSCode.getClassSymbol(className, classData);
-                symbols.push(classSym);
-
-                for (const [methodName, methodData] of Object.entries(classData.methods)) {
-                    const name = `${className}.${methodName}`;
-                    const sym = this.iqgeoVSCode.getMethodSymbol(name, methodData);
-                    symbols.push(sym);
-                }
-            }
-        }
-
-        symbols.sort((a, b) => {
-            return a.location.range.start.line - b.location.range.start.line;
-        });
-
-        return symbols;
     }
 
     _goToNextSymbol(next = true) {
@@ -367,7 +318,7 @@ class IQGeoSearch {
         if (editor) {
             const doc = editor.document;
             if (doc.languageId === 'javascript' || doc.languageId === 'python') {
-                const sortedSymbols = this._getSymbolsForFile(doc.fileName);
+                const sortedSymbols = this.iqgeoVSCode.getSymbolsForFile(doc.fileName);
                 const line = editor.selection.active.line;
                 let symLine;
                 let targetIndex;

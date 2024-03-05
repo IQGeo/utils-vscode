@@ -135,12 +135,12 @@ function removeComments(str, inComment = false) {
 }
 
 function removeLineComment(str) {
-    let index = str.indexOf('//')
+    let index = str.indexOf('//');
     while (index > -1) {
         if (!withinString(str, index)) {
             return str.substring(0, index);
         }
-        index = str.indexOf('//', index + 2)
+        index = str.indexOf('//', index + 2);
     }
     return str;
 }

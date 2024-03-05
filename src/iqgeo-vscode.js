@@ -6,6 +6,7 @@ const IQGeoSearch = require('./iqgeo-search');
 const IQGeoJSSearch = require('./iqgeo-js-search');
 const IQGeoPythonSearch = require('./iqgeo-python-search');
 const IQGeoLinter = require('./iqgeo-linter');
+const IQGeoJSDoc = require('./iqgeo-jsdoc');
 const Utils = require('./utils');
 
 const PROTOTYPE_CALL_REG = /(\w+)\.prototype\.(\w+)\.(call|apply)\s*\(/;
@@ -36,6 +37,7 @@ class IQGeoVSCode {
     constructor(context) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.iqgeoLinter = new IQGeoLinter(this);
+        this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
 
         this.symbols = {};
         this.classes = new Map();
@@ -81,17 +83,7 @@ class IQGeoVSCode {
         ];
 
         vscode.workspace.onDidSaveTextDocument((doc) => {
-            const { languageId } = doc;
-            for (const config of this._languageConfig) {
-                if (config.languageId === languageId) {
-                    try {
-                        config.searchEngine.updateClasses(doc.fileName, config);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                    break;
-                }
-            }
+            this.updateClassesForDoc(doc);
         });
 
         this._initSymbolsConfig();
@@ -822,6 +814,36 @@ class IQGeoVSCode {
         return this.getSymbols(query.toLowerCase(), { searchClasses: true });
     }
 
+    getSymbolsForFile(fileName) {
+        const symbols = [];
+
+        for (const [className, classData] of this.allClasses()) {
+            if (classData.fileName === fileName) {
+                const classSym = this.getClassSymbol(className, classData);
+                symbols.push(classSym);
+
+                for (const [methodName, methodData] of Object.entries(classData.methods)) {
+                    const name = `${className}.${methodName}`;
+                    const sym = this.getMethodSymbol(name, methodData);
+                    symbols.push(sym);
+                }
+            }
+        }
+
+        for (const methodData of this.allExportedFunctions()) {
+            if (methodData.fileName === fileName) {
+                const sym = this.getMethodSymbol(methodData.name, methodData);
+                symbols.push(sym);
+            }
+        }
+
+        symbols.sort((a, b) => {
+            return a.location.range.start.line - b.location.range.start.line;
+        });
+
+        return symbols;
+    }
+
     // Read all files from defined search paths
     updateClasses() {
         this.classes = new Map();
@@ -852,7 +874,7 @@ class IQGeoVSCode {
                         for (const config of this._languageConfig) {
                             if (config.extension === ext) {
                                 nFiles++;
-                                config.searchEngine.updateClasses(file, config);
+                                config.searchEngine.updateClasses(file);
                                 this._updateRootFolders(file);
                                 break;
                             }
@@ -910,6 +932,22 @@ class IQGeoVSCode {
         }
     }
 
+    updateClassesForDoc(doc, useDocLines = false) {
+        const { languageId } = doc;
+        for (const config of this._languageConfig) {
+            if (config.languageId === languageId) {
+                try {
+                    const fileLines = useDocLines ? Utils.getDocLines(doc) : undefined;
+                    this.clearDataForFile(doc.fileName);
+                    config.searchEngine.updateClasses(doc.fileName, fileLines);
+                } catch (error) {
+                    console.error(error);
+                }
+                break;
+            }
+        }
+    }
+
     _showSearchSummary(summary) {
         const filterInfo = (data, props = ['fileName', 'methods']) => {
             const newData = [];
@@ -963,6 +1001,7 @@ class IQGeoVSCode {
     addClassData(className, data) {
         const key = `${className}:${data.languageId}`;
         this.classes.set(key, data);
+        this.parents.delete(key);
     }
 
     getClassData(className, languageId = 'javascript') {
@@ -985,7 +1024,9 @@ class IQGeoVSCode {
         if (!parent) return;
         const key = `${className}:${languageId}`;
         const parents = this.parents.get(key) || [];
-        parents.push(parent);
+        if (!parents.includes(parent)) {
+            parents.push(parent);
+        }
         this.parents.set(key, parents);
     }
 
@@ -1019,6 +1060,26 @@ class IQGeoVSCode {
             allData.push(...dataArray);
         }
         return allData;
+    }
+
+    clearDataForFile(fileName) {
+        for (const [key, data] of this.classes) {
+            if (data.fileName === fileName) {
+                this.classes.delete(key);
+                this.parents.delete(key);
+            }
+        }
+
+        for (const [key, dataArray] of this.exportedFunctions) {
+            if (dataArray.find((data) => data.fileName === fileName)) {
+                const newData = dataArray.filter((data) => data.fileName !== fileName);
+                if (newData.length === 0) {
+                    this.exportedFunctions.delete(key);
+                } else {
+                    this.exportedFunctions.set(key, newData);
+                }
+            }
+        }
     }
 
     _getNamedImports(doc) {
