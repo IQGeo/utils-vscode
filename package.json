@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -207,12 +207,7 @@
 
             {
                 "command": "iqgeo.addJSDoc",
-                "key": "cmd+d"
-            },
-            {
-                "command": "iqgeo.addJSDoc",
-                "key": "ctrl+d",
-                "when": "!isMac"
+                "key": "ctrl+shift+d"
             },
 
             {

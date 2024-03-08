@@ -15,7 +15,6 @@ const IMPORT_MULTI_LINE_REG = /^\s*import\s+/;
 
 const IGNORE_DIRS = [
     '.git',
-    '.vscode',
     'node_modules',
     'doc',
     'coverage',
