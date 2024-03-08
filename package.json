@@ -57,7 +57,7 @@
             },
             {
                 "command": "iqgeo.updateProject",
-                "title": "IQGeo Update Project from .iqgeorc.json"
+                "title": "IQGeo Update Project from .iqgeorc.jsonc"
             }
         ],
         "keybindings": [
@@ -86,7 +86,6 @@
                     "sideBarVisible": true
                 }
             },
-
             {
                 "command": "iqgeo.searchSymbols",
                 "key": "ctrl+;",
@@ -105,7 +104,6 @@
                     "currentWord": true
                 }
             },
-
             {
                 "command": "iqgeo.searchEditor",
                 "key": "alt+g"
@@ -115,7 +113,6 @@
                 "key": "ctrl+g",
                 "when": "isMac"
             },
-
             {
                 "command": "editor.action.referenceSearch.trigger",
                 "key": "ctrl+oem_comma",
@@ -126,7 +123,6 @@
                 "key": "ctrl+.",
                 "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
             },
-
             {
                 "command": "iqgeo.searchSymbols",
                 "key": "ctrl+t",
@@ -137,7 +133,6 @@
                 "key": "cmd+t",
                 "when": "!sideBarVisible"
             },
-
             {
                 "command": "iqgeo.searchSymbols",
                 "key": "ctrl+;",
@@ -154,12 +149,10 @@
                     "currentWord": true
                 }
             },
-
             {
                 "key": "ctrl+cmd+left",
                 "command": "workbench.action.navigateBack"
             },
-
             {
                 "key": "alt+oem_comma",
                 "command": "editor.action.goToReferences",
@@ -180,7 +173,6 @@
                 "command": "iqgeo.goToDefinition",
                 "when": "editorTextFocus && !isInEmbeddedEditor"
             },
-
             {
                 "command": "iqgeo.searchRoot",
                 "key": "ctrl+g",
@@ -208,7 +200,6 @@
                 "command": "-jupyter.refreshDataViewer",
                 "when": "isWorkspaceTrusted && jupyter.dataViewerActive"
             },
-
             {
                 "command": "iqgeo.addJSDoc",
                 "key": "ctrl+shift+d"
@@ -246,7 +237,6 @@
                 "command": "iqgeo.goToNextSymbol",
                 "key": "cmd+numpad_add"
             },
-
             {
                 "command": "workbench.files.action.showActiveFileInExplorer",
                 "key": "ctrl+e",
@@ -257,7 +247,6 @@
                 "key": "cmd+e",
                 "when": "editorTextFocus"
             },
-
             {
                 "command": "iqgeo.toggleTerminalFocus",
                 "key": "ctrl+'",
@@ -290,7 +279,6 @@
                     "editorFocus": false
                 }
             },
-
             {
                 "command": "workbench.action.terminal.toggleTerminal",
                 "key": "alt+'"
@@ -300,7 +288,6 @@
                 "key": "ctrl+'",
                 "when": "isMac"
             },
-
             {
                 "key": "ctrl+1",
                 "command": "iqgeo.sidebarAndEditorAndTerminal"
@@ -337,21 +324,21 @@
         "menus": {
             "editor/context": [
                 {
-                    "when": "resourceFilename == .iqgeorc.json",
+                    "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
                 }
             ],
             "editor/title/context": [
                 {
-                    "when": "resourceFilename == .iqgeorc.json",
+                    "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
                 }
             ],
             "explorer/context": [
                 {
-                    "when": "resourceFilename == .iqgeorc.json",
+                    "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
                 }
@@ -414,7 +401,8 @@
         "lint:fix": "npm run lint -- --fix"
     },
     "dependencies": {
-        "findit": "^2.0.0"
+        "findit": "^2.0.0",
+        "jsonc": "^2.0.0"
     },
     "devDependencies": {
         "eslint": "^8.51.0"

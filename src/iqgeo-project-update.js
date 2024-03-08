@@ -1,6 +1,7 @@
 const vscode = require('vscode'); // eslint-disable-line
 const fs = require('fs');
 const path = require('path');
+const jsonc = require('jsonc');
 
 const aptGetMappingsBuild = {
     memcached: ['libmemcached-dev'],
@@ -155,9 +156,9 @@ class IQGeoProjectUpdate {
     }
 
     _readConfig(root) {
-        const configFilePath = path.join(root, '.iqgeorc.json');
+        const configFilePath = path.join(root, '.iqgeorc.jsonc');
         const configFile = fs.readFileSync(configFilePath, 'utf8');
-        const config = JSON.parse(configFile);
+        const config = jsonc.parse(configFile);
         if (!config.registry) config.registry = 'harbor.delivery.iqgeo.cloud/releases';
         for (const module of config.modules) {
             if (module.version && !module.shortVersion)
