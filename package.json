@@ -56,7 +56,7 @@
                 "title": "IQGeo Go To Next Symbol"
             },
             {
-                "command": "iqgeo.updateDockerfiles",
+                "command": "iqgeo.updateProject",
                 "title": "IQGeo Update Project from .iqgeorc.json"
             }
         ],
@@ -334,6 +334,29 @@
                 "command": "iqgeo.editorGroup"
             }
         ],
+        "menus": {
+            "editor/context": [
+                {
+                    "when": "resourceFilename == .iqgeorc.json",
+                    "command": "iqgeo.updateProject",
+                    "group": "iqgeo"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "when": "resourceFilename == .iqgeorc.json",
+                    "command": "iqgeo.updateProject",
+                    "group": "iqgeo"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "when": "resourceFilename == .iqgeorc.json",
+                    "command": "iqgeo.updateProject",
+                    "group": "iqgeo"
+                }
+            ]
+        },
         "configuration": {
             "type": "object",
             "title": "IQGeo configuration",

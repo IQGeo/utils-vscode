@@ -123,9 +123,9 @@ const fileModifications = {
 };
 
 /**
- *
+ * 
  */
-class IQGeoDockerfiles {
+class IQGeoProjectUpdate {
     constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
     }
@@ -257,4 +257,4 @@ function replaceFetchPipPackages(optionalDeps = [], content) {
     return content;
 }
 
-module.exports = IQGeoDockerfiles;
+module.exports = IQGeoProjectUpdate;
