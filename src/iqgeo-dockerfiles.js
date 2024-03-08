@@ -2,10 +2,15 @@ const vscode = require('vscode'); // eslint-disable-line
 const fs = require('fs');
 const path = require('path');
 
-const aptGetMappings = {
+const aptGetMappingsBuild = {
     memcached: ['libmemcached-dev'],
     ldap: ['libsasl2-dev', 'libldap2-dev'],
     saml: ['libxml2-dev', 'libxmlsec1-dev'],
+};
+const aptGetMappingsRuntime = {
+    memcached: ['libmemcached11'],
+    ldap: ['libsasl2-dev', 'libldap2-dev'], //ENH: identify the correct runtime packages
+    saml: ['libxml2-dev', 'libxmlsec1-dev'], //ENH: identify the correct runtime packages
 };
 
 const fileModifications = {
@@ -13,6 +18,9 @@ const fileModifications = {
         const { modules, platform } = config;
 
         content = replaceModuleInjection(content, modules, true);
+
+        content = replaceOptionalDeps(platform.devenv, content);
+        content = replaceFetchPipPackages(platform.devenv, content);
 
         content = content.replace(/platform-devenv:.*/, `platform-devenv:${platform.version}`);
         return content;
@@ -71,19 +79,9 @@ const fileModifications = {
     'deployment/dockerfile.appserver': (config, content) => {
         const { modules, platform } = config;
 
-        let aptGets = platform.appserver
-            .map((name) => aptGetMappings[name] ?? [])
-            .flat()
-            .join(' ');
-        const section1 = aptGets
-            ? `RUN apt-get update && \\\n    apt-get install -y ${aptGets} \\\n    && apt-get autoremove && apt-get clean\n\n` +
-              `RUN myw_product fetch pip_packages --include ${platform.appserver.join(' ')}`
-            : '';
-
-        content = content.replace(
-            /(# START SECTION optional dependencies.*)[\s\S]*?(# END SECTION)/,
-            `$1\n${section1}\n$2`
-        );
+        content = replaceOptionalDeps(platform.appserver, content, 'build');
+        content = replaceOptionalDeps(platform.appserver, content, 'runtime');
+        content = replaceFetchPipPackages(platform.devenv, content);
 
         content = content.replace(
             /platform-appserver:\S+/g,
@@ -182,7 +180,6 @@ class IQGeoDockerfiles {
             }
         });
         return !errors.some((e) => e);
-
     }
 }
 
@@ -226,6 +223,36 @@ function replaceModuleInjection(content, modules, isDevEnv = false) {
     content = content.replace(
         /(# START SECTION Copy the modules.*)[\s\S]*?(# END SECTION)/,
         `$1\n${section2}\n$2`
+    );
+    return content;
+}
+
+function replaceOptionalDeps(optionalDeps = [], content, type = 'build') {
+    const aptGetMappings = type === 'build' ? aptGetMappingsBuild : aptGetMappingsRuntime;
+    let aptGets = optionalDeps
+        .map((name) => aptGetMappings[name] ?? [])
+        .flat()
+        .join(' ');
+    const section1 = aptGets
+        ? `RUN apt-get update && \\\n    apt-get install -y ${aptGets} \\\n    && apt-get autoremove && apt-get clean`
+        : '';
+    content = content.replace(
+        type === 'build'
+            ? /(# START SECTION optional dependencies \(build.*)[\s\S]*?(# END SECTION)/
+            : /(# START SECTION optional dependencies \(runtime.*)[\s\S]*?(# END SECTION)/,
+        `$1\n${section1}\n$2`
+    );
+
+    return content;
+}
+
+function replaceFetchPipPackages(optionalDeps = [], content) {
+    content = content.replace(
+        /(RUN myw_product fetch pip_packages.*)/,
+        optionalDeps?.length
+            ? `RUN myw_product fetch pip_packages --include ${optionalDeps.join(' ')}`
+            : 'RUN myw_product fetch pip_packages',
+        content
     );
     return content;
 }
