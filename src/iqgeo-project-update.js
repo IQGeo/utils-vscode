@@ -121,16 +121,23 @@ const fileModifications = {
         content = content.replace(`MYW_DB_NAME=myproj\n`, `MYW_DB_NAME=${db_name}\n`);
         return content;
     },
+
+    'deployment/entrypoint.d/600_init_db.sh': initDbModifier,
+    '.devcontainer/entrypoint.d/600_init_db.sh': initDbModifier,
 };
 
 /**
- * 
+ * Updates a IQGeo project.
+ * Project structure should as per https://github.com/IQGeo/utils-project-template with a .iqgeorc.jsonc configuration file
  */
 class IQGeoProjectUpdate {
     constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
     }
 
+    /**
+     * Updates a IQGeo project based on https://github.com/IQGeo/utils-project-template from the options specified in the .iqgeorc.jsonc configuration file
+     */
     async update() {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) return;
@@ -199,6 +206,25 @@ function fileUpdater(root, config) {
         fs.writeFileSync(filePath, content);
     };
 }
+
+
+
+
+function initDbModifier(config, content) {
+    const { modules }= config;
+    const section1 = modules
+        .filter(({ version, dbInit = !!version }) => dbInit )
+        .map(({ name, schemaGrep=name }) => `if ! myw_db $MYW_DB_NAME list versions | grep ${schemaGrep}; then myw_db $MYW_DB_NAME install ${name}; fi`)
+        .join('\n');
+    content = content.replace(
+        /(# START SECTION db init.*)[\s\S]*?(# END SECTION)/,
+        `$1\n${section1}\n$2`
+    );
+
+    return content
+}
+
+
 
 function replaceModuleInjection(content, modules, isDevEnv = false) {
     const isFromInjectorFn = ({ version, devSrc }) => version && !devSrc;
