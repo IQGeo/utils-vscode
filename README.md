@@ -30,6 +30,9 @@ The extension provides the following features:
 5. Command to create JSDoc comment for a function or class.<br>
 Press CMD+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters.
 
+6. Command to update an IQGeo project based on options in .iqgeorc.jsonc configuration file.<br>
+See https://github.com/IQGeo/utils-project-template for details.
+
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
 Files are automatically rescanned when saved.
@@ -121,8 +124,11 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.6
+-   New command to update an IQGeo project based on https://github.com/IQGeo/utils-project-template from the options specified in the .iqgeorc.jsonc configuration file.
+
 ### 1.0.5
--   Update shortcut for JSDoc command
+-   Update shortcut for JSDoc command.
 
 ### 1.0.4
 -   Added command to insert JSDoc for a function or class definition.
