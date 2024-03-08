@@ -7,6 +7,7 @@ const IQGeoJSSearch = require('./iqgeo-js-search');
 const IQGeoPythonSearch = require('./iqgeo-python-search');
 const IQGeoLinter = require('./iqgeo-linter');
 const IQGeoJSDoc = require('./iqgeo-jsdoc');
+const IQGeoProjectUpdate = require('./iqgeo-project-update');
 const Utils = require('./utils');
 
 const PROTOTYPE_CALL_REG = /(\w+)\.prototype\.(\w+)\.(call|apply)\s*\(/;
@@ -37,6 +38,7 @@ class IQGeoVSCode {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.iqgeoLinter = new IQGeoLinter(this);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
+        this.projectUpdater = new IQGeoProjectUpdate(this);
 
         this.symbols = {};
         this.classes = new Map();
@@ -53,12 +55,18 @@ class IQGeoVSCode {
             language: 'javascript',
         };
 
+        
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.refreshSymbols', () => this.updateClasses())
         );
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.goToDefinition', () => this.goToDefinition())
+        );
+
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('iqgeo.updateProject', () => this.projectUpdater.update())
         );
 
         context.subscriptions.push(vscode.languages.registerDefinitionProvider(jsFile, this));
