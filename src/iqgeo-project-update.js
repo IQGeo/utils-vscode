@@ -115,6 +115,13 @@ const fileModifications = {
         return content;
     },
 
+    'deployment/docker-compose.yml': (config, content) => {
+        const { prefix, db_name } = config;
+        content = content.replace(/\${PROJ_PREFIX:-myproj}/g, `\${PROJ_PREFIX:-${prefix}}`);
+        content = content.replace(/\${MYW_DB_NAME:-iqgeo}/g, `\${MYW_DB_NAME:-${db_name}}`);
+        return content;
+    },
+
     'deployment/.env.example': (config, content) => {
         const { prefix, db_name } = config;
         content = content.replace(`PROJ_PREFIX=myproj\n`, `PROJ_PREFIX=${prefix}\n`);
