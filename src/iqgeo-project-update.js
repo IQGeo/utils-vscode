@@ -91,15 +91,9 @@ const fileModifications = {
 
         const section2 = modules
             .filter(({ devOnly }) => !devOnly)
-            .map(({ name }) =>
-                ['__init__.py', 'version_info.json', 'server/', 'public/']
-                    .map(
-                        (path) =>
-                            `COPY --chown=www-data:www-data --from=iqgeo_builder \${MODULES}/${name}/${path} \${MODULES}/${name}/${
-                                path.endsWith('/') ? path : ''
-                            }`
-                    )
-                    .join('\n')
+            .map(
+                ({ name }) =>
+                    `COPY --chown=www-data:www-data --from=iqgeo_builder \${MODULES}/${name}/ \${MODULES}/${name}/`
             )
             .join('\n');
         content = content.replace(
@@ -214,24 +208,22 @@ function fileUpdater(root, config) {
     };
 }
 
-
-
-
 function initDbModifier(config, content) {
-    const { modules }= config;
+    const { modules } = config;
     const section1 = modules
-        .filter(({ version, dbInit = !!version }) => dbInit )
-        .map(({ name, schemaGrep=name }) => `if ! myw_db $MYW_DB_NAME list versions | grep ${schemaGrep}; then myw_db $MYW_DB_NAME install ${name}; fi`)
+        .filter(({ version, dbInit = !!version }) => dbInit)
+        .map(
+            ({ name, schemaGrep = name }) =>
+                `if ! myw_db $MYW_DB_NAME list versions | grep ${schemaGrep}; then myw_db $MYW_DB_NAME install ${name}; fi`
+        )
         .join('\n');
     content = content.replace(
         /(# START SECTION db init.*)[\s\S]*?(# END SECTION)/,
         `$1\n${section1}\n$2`
     );
 
-    return content
+    return content;
 }
-
-
 
 function replaceModuleInjection(content, modules, isDevEnv = false) {
     const isFromInjectorFn = ({ version, devSrc }) => version && !devSrc;
