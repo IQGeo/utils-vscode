@@ -1,7 +1,7 @@
 const vscode = require('vscode'); // eslint-disable-line
 const fs = require('fs');
 const path = require('path');
-const Utils = require('./utils');
+const Utils = require('../utils');
 
 const LANGUAGE_MAP = {
     'js': 'javascript',

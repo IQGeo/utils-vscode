@@ -261,6 +261,10 @@ function debounce(callback, wait) {
     };
 }
 
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 module.exports = {
     getFileLines,
     getDocLines,
@@ -277,4 +281,5 @@ module.exports = {
     selectedText,
     matchMultiLine,
     debounce,
+    wait,
 };

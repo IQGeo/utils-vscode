@@ -124,6 +124,9 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.7
+-   Added automatic watch to restart apache or restart the active debug session.
+
 ### 1.0.6
 -   New command to update an IQGeo project based on https://github.com/IQGeo/utils-project-template from the options specified in the .iqgeorc.jsonc configuration file.
 

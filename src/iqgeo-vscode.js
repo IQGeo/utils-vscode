@@ -2,27 +2,19 @@ const vscode = require('vscode'); // eslint-disable-line
 const fs = require('fs');
 const path = require('path');
 const find = require('findit');
-const IQGeoSearch = require('./iqgeo-search');
-const IQGeoJSSearch = require('./iqgeo-js-search');
-const IQGeoPythonSearch = require('./iqgeo-python-search');
+const IQGeoSearch = require('./search/iqgeo-search');
+const IQGeoJSSearch = require('./search/iqgeo-js-search');
+const IQGeoPythonSearch = require('./search/iqgeo-python-search');
 const IQGeoLinter = require('./iqgeo-linter');
 const IQGeoJSDoc = require('./iqgeo-jsdoc');
-const IQGeoProjectUpdate = require('./iqgeo-project-update');
+const IQGeoWatch = require('./iqgeo-watch');
 const Utils = require('./utils');
 
 const PROTOTYPE_CALL_REG = /(\w+)\.prototype\.(\w+)\.(call|apply)\s*\(/;
 const IMPORT_REG = /^\s*import\s+(\w*),?\s*{?([\w\s,]*)}?\s*from\s+['"](.*?)['"];?/;
 const IMPORT_MULTI_LINE_REG = /^\s*import\s+/;
 
-const IGNORE_DIRS = [
-    '.git',
-    'node_modules',
-    'doc',
-    'coverage',
-    'bundles',
-    'Doc',
-    'Externals',
-];
+const IGNORE_DIRS = ['.git', 'node_modules', 'doc', 'coverage', 'bundles', 'Doc', 'Externals'];
 
 const DEBUG = false;
 
@@ -36,9 +28,9 @@ const DEBUG = false;
 class IQGeoVSCode {
     constructor(context) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
-        this.iqgeoLinter = new IQGeoLinter(this);
+        this.linter = new IQGeoLinter(this);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
-        this.projectUpdater = new IQGeoProjectUpdate(this);
+        this.watchManager = new IQGeoWatch(this, context);
 
         this.symbols = {};
         this.classes = new Map();
@@ -55,18 +47,12 @@ class IQGeoVSCode {
             language: 'javascript',
         };
 
-        
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.refreshSymbols', () => this.updateClasses())
         );
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.goToDefinition', () => this.goToDefinition())
-        );
-
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.updateProject', () => this.projectUpdater.update())
         );
 
         context.subscriptions.push(vscode.languages.registerDefinitionProvider(jsFile, this));
@@ -98,6 +84,10 @@ class IQGeoVSCode {
 
     onActivation() {
         this.updateClasses();
+    }
+
+    onDeactivation() {
+        this.watchManager.stop();
     }
 
     _initSymbolsConfig() {
@@ -896,44 +886,11 @@ class IQGeoVSCode {
 
                     vscode.window.showInformationMessage(msg);
 
-                    const { searchSummary } =
-                        vscode.workspace.getConfiguration('iqgeo-utils-vscode');
-                    if (searchSummary || this.debug) {
-                        const exportedFunctions = this.allExportedFunctions();
-                        const mywClasses = new Map();
-                        let classesTotal = 0;
-                        let symbolsTotal = 0;
+                    this._generateSearchSummary();
 
-                        for (const [className, data] of this.allClasses()) {
-                            if (data.languageId === 'javascript' && !data.es) {
-                                mywClasses.set(className, data);
-                            }
-                            classesTotal++;
-                            symbolsTotal += Object.keys(data.methods).length;
-                        }
+                    this.linter.checkOpenFiles();
 
-                        symbolsTotal += exportedFunctions.length;
-
-                        const summary = {
-                            searchPaths: this._getSearchPaths(),
-                            symbolsTotal,
-                            classesTotal,
-                            exportedFunctionsTotal: exportedFunctions.length,
-                            classes: this.classes,
-                            exportedFunctions,
-                            parents: this.parents,
-                            esClasses: this.esClasses,
-                            mywClasses,
-                        };
-
-                        if (searchSummary) {
-                            this._showSearchSummary(summary);
-                        } else {
-                            console.log(summary);
-                        }
-                    }
-
-                    this.iqgeoLinter.checkOpenFiles();
+                    this.watchManager.start();
                 });
             }
         }
@@ -951,6 +908,44 @@ class IQGeoVSCode {
                     console.error(error);
                 }
                 break;
+            }
+        }
+    }
+
+    _generateSearchSummary() {
+        const { searchSummary } = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
+        if (searchSummary || this.debug) {
+            const exportedFunctions = this.allExportedFunctions();
+            const mywClasses = new Map();
+            let classesTotal = 0;
+            let symbolsTotal = 0;
+
+            for (const [className, data] of this.allClasses()) {
+                if (data.languageId === 'javascript' && !data.es) {
+                    mywClasses.set(className, data);
+                }
+                classesTotal++;
+                symbolsTotal += Object.keys(data.methods).length;
+            }
+
+            symbolsTotal += exportedFunctions.length;
+
+            const summary = {
+                searchPaths: this._getSearchPaths(),
+                symbolsTotal,
+                classesTotal,
+                exportedFunctionsTotal: exportedFunctions.length,
+                classes: this.classes,
+                exportedFunctions,
+                parents: this.parents,
+                esClasses: this.esClasses,
+                mywClasses,
+            };
+
+            if (searchSummary) {
+                this._showSearchSummary(summary);
+            } else {
+                console.log(summary);
             }
         }
     }
@@ -1206,7 +1201,7 @@ class IQGeoVSCode {
     _getSearchPaths() {
         let paths = vscode.workspace.getConfiguration('iqgeo-utils-vscode').searchPaths || '';
         if (!paths.length && vscode.workspace.workspaceFolders) {
-            paths = vscode.workspace.workspaceFolders[0].uri.fsPath;
+            paths = this.getWorkspaceFolder();
             if (paths.startsWith('/opt/iqgeo/platform/WebApps/myworldapp')) {
                 paths = '/opt/iqgeo/platform/WebApps/myworldapp'; // in container so include platform source by default
             }
