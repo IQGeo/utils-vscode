@@ -91,15 +91,9 @@ const fileModifications = {
 
         const section2 = modules
             .filter(({ devOnly }) => !devOnly)
-            .map(({ name }) =>
-                ['__init__.py', 'version_info.json', 'server/', 'public/']
-                    .map(
-                        (path) =>
-                            `COPY --chown=www-data:www-data --from=iqgeo_builder \${MODULES}/${name}/${path} \${MODULES}/${name}/${
-                                path.endsWith('/') ? path : ''
-                            }`
-                    )
-                    .join('\n')
+            .map(
+                ({ name }) =>
+                    `COPY --chown=www-data:www-data --from=iqgeo_builder \${MODULES}/${name}/ \${MODULES}/${name}/`
             )
             .join('\n');
         content = content.replace(
@@ -112,6 +106,13 @@ const fileModifications = {
     'deployment/dockerfile.tools': (config, content) => {
         const { platform } = config;
         content = content.replace(/platform-tools:\S+/g, `platform-tools:${platform.version}`);
+        return content;
+    },
+
+    'deployment/docker-compose.yml': (config, content) => {
+        const { prefix, db_name } = config;
+        content = content.replace(/\${PROJ_PREFIX:-myproj}/g, `\${PROJ_PREFIX:-${prefix}}`);
+        content = content.replace(/\${MYW_DB_NAME:-iqgeo}/g, `\${MYW_DB_NAME:-${db_name}}`);
         return content;
     },
 
