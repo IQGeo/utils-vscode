@@ -866,7 +866,7 @@ class IQGeoVSCode {
 
                 finder.on('file', (file) => {
                     const parts = path.basename(file).split('.');
-                    if (parts[0] !== '__init__') {
+                    if (parts[0] !== '__init__' && !file.endsWith('.bundle.js')) {
                         const ext = parts[parts.length - 1];
                         for (const config of this._languageConfig) {
                             if (config.extension === ext) {
