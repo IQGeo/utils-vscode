@@ -243,7 +243,7 @@ function replaceModuleInjection(content, modules, isDevEnv = false) {
         .map(({ name, version }) =>
             version
                 ? `COPY --link --from=${name} / \${MODULES}/`
-                : `COPY --link /${name} \${MODULES}/`
+                : `COPY --link ${name} \${MODULES}/${name}`
         )
         .join('\n');
     content = content.replace(
