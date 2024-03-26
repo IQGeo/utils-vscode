@@ -63,7 +63,10 @@ class IQGeoWatch {
             this.watchTerminal.sendText(commandText, true);
         }
 
-        if (!this._hasApacheTerminal()) {
+        if (
+            !this._hasApacheTerminal() &&
+            fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
+        ) {
             this.apacheTerminal = vscode.window.createTerminal({
                 name: 'Apache Restart',
                 cwd: workspaceFolder,
@@ -102,9 +105,13 @@ class IQGeoWatch {
                 await Utils.wait(restartDelay);
                 await vscode.commands.executeCommand('workbench.action.debug.restart');
             }
-        } else if (ext === '.py' && this._hasApacheTerminal()) {
-            // 'touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi'
-            this.apacheTerminal.sendText('apachectl -k restart', true);
+        } else if (
+            ext === '.py' &&
+            this._hasApacheTerminal() &&
+            fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
+        ) {
+            // 'apachectl -k restart'
+            this.apacheTerminal.sendText('touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi', true);
         }
     }
 

@@ -208,7 +208,6 @@
                 "command": "iqgeo.addJSDoc",
                 "key": "ctrl+shift+d"
             },
-
             {
                 "command": "iqgeo.goToPreviousSymbol",
                 "key": "ctrl+pageup"
@@ -394,8 +393,8 @@
                 },
                 "iqgeo-utils-vscode.enableAutoRestart": {
                     "type": "boolean",
-                    "default": true,
-                    "description": "Enable auto restart of Apache and Client."
+                    "default": false,
+                    "description": "Enable auto restart of Apache and Chrome debug session."
                 },
                 "iqgeo-utils-vscode.watchCommand": {
                     "type": "string",
@@ -404,7 +403,7 @@
                 "iqgeo-utils-vscode.restartDelay": {
                     "type": "integer",
                     "default": 1500,
-                    "description": "Delay time in ms between a file change and restarting a client debug session."
+                    "description": "Delay time in ms between a file change and restarting a Chrome debug session."
                 },
                 "iqgeo-utils-vscode.resizeTerminal": {
                     "type": "boolean",
