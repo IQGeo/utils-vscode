@@ -27,10 +27,10 @@ class IQGeoWatch {
         });
 
         vscode.window.onDidCloseTerminal((t) => {
-            if (t === this.watchTerminal) {
-                this.watchTerminal = undefined;
-            } else if (t === this.apacheTerminal) {
-                this.apacheTerminal = undefined;
+            if (t === this.jsTerminal) {
+                this.jsTerminal = undefined;
+            } else if (t === this.pythonTerminal) {
+                this.pythonTerminal = undefined;
             }
         });
     }
@@ -44,7 +44,7 @@ class IQGeoWatch {
 
         const workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
 
-        if (!this._hasWatchTerminal()) {
+        if (!this._hasJSTerminal()) {
             let commandText = vscode.workspace.getConfiguration('iqgeo-utils-vscode').watchCommand;
 
             if (!commandText) {
@@ -56,36 +56,36 @@ class IQGeoWatch {
                     : 'myw_product watch applications_dev --debug';
             }
 
-            this.watchTerminal = vscode.window.createTerminal({
-                name: 'IQGeo Watch',
+            this.jsTerminal = vscode.window.createTerminal({
+                name: 'JS Watch',
                 cwd: workspaceFolder,
             });
-            this.watchTerminal.sendText(commandText, true);
+            this.jsTerminal.sendText(commandText, true);
         }
 
         if (
-            !this._hasApacheTerminal() &&
+            !this._hasPythonTerminal() &&
             fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
         ) {
-            this.apacheTerminal = vscode.window.createTerminal({
-                name: 'Apache Restart',
+            this.pythonTerminal = vscode.window.createTerminal({
+                name: 'Python Restart',
                 cwd: workspaceFolder,
             });
         }
     }
 
     /**
-     * Closes the watch terminal and the apache terminal if they are running.
+     * Closes the JS watch terminal and the Python terminal if they are running.
      * @return {undefined}
      */
     stop() {
-        if (this._hasWatchTerminal()) {
-            this.watchTerminal.dispose();
-            this.watchTerminal = undefined;
+        if (this._hasJSTerminal()) {
+            this.jsTerminal.dispose();
+            this.jsTerminal = undefined;
         }
-        if (this._hasApacheTerminal()) {
-            this.apacheTerminal.dispose();
-            this.apacheTerminal = undefined;
+        if (this._hasPythonTerminal()) {
+            this.pythonTerminal.dispose();
+            this.pythonTerminal = undefined;
         }
     }
 
@@ -96,7 +96,7 @@ class IQGeoWatch {
 
         if (ext === '.js') {
             if (
-                this._hasWatchTerminal() &&
+                this._hasJSTerminal() &&
                 vscode.debug.activeDebugSession &&
                 CLIENT_DEBUG_TYPES.includes(vscode.debug.activeDebugSession.type)
             ) {
@@ -107,26 +107,26 @@ class IQGeoWatch {
             }
         } else if (
             ext === '.py' &&
-            this._hasApacheTerminal() &&
+            this._hasPythonTerminal() &&
             fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
         ) {
             // 'apachectl -k restart'
-            this.apacheTerminal.sendText('touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi', true);
+            this.pythonTerminal.sendText('touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi', true);
         }
     }
 
-    _hasWatchTerminal() {
-        if (this.watchTerminal && this.watchTerminal.exitStatus !== undefined) {
-            this.watchTerminal = undefined;
+    _hasJSTerminal() {
+        if (this.jsTerminal && this.jsTerminal.exitStatus !== undefined) {
+            this.jsTerminal = undefined;
         }
-        return !!this.watchTerminal;
+        return !!this.jsTerminal;
     }
 
-    _hasApacheTerminal() {
-        if (this.apacheTerminal && this.apacheTerminal.exitStatus !== undefined) {
-            this.apacheTerminal = undefined;
+    _hasPythonTerminal() {
+        if (this.pythonTerminal && this.pythonTerminal.exitStatus !== undefined) {
+            this.pythonTerminal = undefined;
         }
-        return !!this.apacheTerminal;
+        return !!this.pythonTerminal;
     }
 }
 

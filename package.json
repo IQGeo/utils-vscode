@@ -394,7 +394,7 @@
                 "iqgeo-utils-vscode.enableAutoRestart": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Enable auto restart of Apache and Chrome debug session."
+                    "description": "Enable auto restart of Python and browser debug session."
                 },
                 "iqgeo-utils-vscode.watchCommand": {
                     "type": "string",
@@ -403,7 +403,7 @@
                 "iqgeo-utils-vscode.restartDelay": {
                     "type": "integer",
                     "default": 1500,
-                    "description": "Delay time in ms between a file change and restarting a Chrome debug session."
+                    "description": "Delay time in ms between a file change and restarting a browser debug session."
                 },
                 "iqgeo-utils-vscode.resizeTerminal": {
                     "type": "boolean",

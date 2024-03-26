@@ -34,9 +34,9 @@ The extension provides the following features:
 6. Command to update an IQGeo project based on options in .iqgeorc.jsonc configuration file.<br>
    See https://github.com/IQGeo/utils-project-template for details.
 
-7. File watch to restart the Apache server or a debug client when a Python or JavaScript file change respectively.<br>
+7. File watch to restart Python or browser debug session when a Python or JavaScript file change respectively.<br>
    This functionality is enabled when **iqgeo-utils-vscode.enableAutoRestart** is set to true.<br>
-   The extension uses one terminal to restart the Apache server and another to run a file watch. A Chrome debug session will be restarted when a JavaScript file is saved.<br>
+   The extension uses one terminal to restart the Python environment and another to run a Javascript file watch. A browser debug session (if active) will be restarted when a JavaScript file is saved.<br>
    The watch can be started using the command 'IQGeo Start Watch'.<br>
    The delay between saving a JavaScript file and restarting a debug session (to allow the watch build to complete) can be configured using the setting **iqgeo-utils-vscode.restartDelay** (defaults to 1500ms).
 
@@ -134,7 +134,7 @@ Shortcuts to control the layout of the workspace
     ```json
     "iqgeo-utils-vscode.enableLayouts": true
     ```
--   Enable auto restart of Apache and Chrome debug session. (Default value is false)
+-   Enable auto restart of Python and browser debug session. (Default value is false)
     ```json
     "iqgeo-utils-vscode.enableAutoRestart": false
     ```
@@ -142,7 +142,7 @@ Shortcuts to control the layout of the workspace
     ```json
     "iqgeo-utils-vscode.watchCommand": "myw_product watch applications_dev --debug"
     ```
--   Delay time in ms between a file change and restarting a Chrome debug session. (Defaults to 1500)
+-   Delay time in ms between a file change and restarting a browser debug session. (Defaults to 1500)
     ```json
     "iqgeo-utils-vscode.restartDelay": 1500
     ```
@@ -151,7 +151,7 @@ Shortcuts to control the layout of the workspace
 
 ### 1.0.7
 
--   Added automatic watch to restart Apache and the active Chrome debug session.
+-   Added automatic watch to restart Python and the active browser debug session.
 
 ### 1.0.6
 
