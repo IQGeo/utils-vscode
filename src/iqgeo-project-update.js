@@ -132,8 +132,10 @@ const fileModifications = {
  * Project structure should as per https://github.com/IQGeo/utils-project-template with a .iqgeorc.jsonc configuration file
  */
 class IQGeoProjectUpdate {
-    constructor(iqgeoVSCode) {
-        this.iqgeoVSCode = iqgeoVSCode;
+    constructor(context) {
+        context.subscriptions.push(
+            vscode.commands.registerCommand('iqgeo.updateProject', () => this.update())
+        );
     }
 
     /**

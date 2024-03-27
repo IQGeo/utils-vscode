@@ -9,11 +9,11 @@ IQGeo development extension to support code navigation and additional linting in
 The extension provides the following features:
 
 1. An alternative definition search dialog that shows a preview of the highlighted result in an editor.<br>
-    The search supports JavaScript and Python and accepts these query formats:
+   The search supports JavaScript and Python and accepts these query formats:
     - \<method name\>
     - \<class name\>
     - \<class name\>.\<method name\>
-    - \<file name\>
+    - \<file name or path\>
 
 <img src="images/def_search_app.png" width="850"/>
 
@@ -22,24 +22,33 @@ The extension provides the following features:
 3. Linting for API usage and subclassing.
 
 4. Set of shortcuts for
+
     - Definition search
     - Code navigation
     - Text search
     - Workspace layouts
 
 5. Command to create JSDoc comment for a function or class.<br>
-Press CMD+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters.
+   Press Ctrl+Shift+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters. Any defaults will be included.
 
 6. Command to update an IQGeo project based on options in .iqgeorc.jsonc configuration file.<br>
-See https://github.com/IQGeo/utils-project-template for details.
+   See https://github.com/IQGeo/utils-project-template for details.
+
+7. File watch to restart Python or browser debug session when a Python or JavaScript file change respectively.<br>
+   This functionality is enabled when **iqgeo-utils-vscode.enableAutoRestart** is set to true.<br>
+   The extension uses one terminal to restart the Python environment and another to run a Javascript file watch. A browser debug session (if active) will be restarted when a JavaScript file is saved.<br>
+   The watch can be started using the command 'IQGeo Start Watch'.<br>
+   The delay between saving a JavaScript file and restarting a debug session (to allow the watch build to complete) can be configured using the setting **iqgeo-utils-vscode.restartDelay** (defaults to 1500ms).
 
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
+The search path defaults to the workspace folder or /opt/iqgeo/platform/WebApps/myworldapp when inside a dev container.<br>
 Files are automatically rescanned when saved.
 
 ## Usage
 
 ### Definition Search
+
 -   Search Definitions = **CMD + T** (**Ctrl + T**).<br>
     The search supports \<method name\> or \<class name\> or \<class\>.\<method\><br>
     Use \<class name\>. to list all functions for a class.<br>
@@ -53,6 +62,7 @@ Files are automatically rescanned when saved.
     (e.g. after changing branch)
 
 ### Text Search
+
 -   Search in the root folder = **CMD + G** (**Ctrl + G**)
 
 -   Search in the workspace (repository) folder = **CMD + R** (**Ctrl + R**)
@@ -60,6 +70,7 @@ Files are automatically rescanned when saved.
 -   Open Editor Search with current selection or word = **Ctrl + G** (**Alt + G**)
 
 ### Navigation
+
 -   Go to Definition = **CMD + .** (**Alt + .**)
 
 -   Go Back = **Ctrl + CMD + Left** (**Alt + Left**)
@@ -69,7 +80,6 @@ Files are automatically rescanned when saved.
 -   Peek Definition = **Ctrl + .**
 
 -   Go to References = **CMD + ,** (**Alt + ,**)
-
 
 <br>
 
@@ -86,10 +96,13 @@ Files are automatically rescanned when saved.
 -   Toggle terminal visibility = **Ctrl + '** (**Alt + '**)
 
 ### JSDoc
+
 -   Insert JSDoc for function or class definition = **Ctrl + Shift + D**
 
 ### Layouts
+
 Shortcuts to control the layout of the workspace
+
 -   **Ctrl + 1** = Sidebar + Editor + Terminal
 -   **Ctrl + 2** = Editor + Terminal
 -   **Ctrl + 3** = Sidebar + Editor
@@ -121,27 +134,50 @@ Shortcuts to control the layout of the workspace
     ```json
     "iqgeo-utils-vscode.enableLayouts": true
     ```
+-   Enable auto restart of Python and browser debug session. (Default value is false)
+    ```json
+    "iqgeo-utils-vscode.enableAutoRestart": false
+    ```
+-   Command to watch for changes in the workspace. (Defaults to myw_product watch)
+    ```json
+    "iqgeo-utils-vscode.watchCommand": "myw_product watch applications_dev --debug"
+    ```
+-   Delay time in ms between a file change and restarting a browser debug session. (Defaults to 1500)
+    ```json
+    "iqgeo-utils-vscode.restartDelay": 1500
+    ```
 
 ## Release Notes
 
+### 1.0.7
+
+-   Added automatic watch to restart Python and the active browser debug session.
+
 ### 1.0.6
+
 -   New command to update an IQGeo project based on https://github.com/IQGeo/utils-project-template from the options specified in the .iqgeorc.jsonc configuration file.
 
 ### 1.0.5
+
 -   Update shortcut for JSDoc command.
 
 ### 1.0.4
+
 -   Added command to insert JSDoc for a function or class definition.
 
 ### 1.0.3
+
 -   Search now includes files without need for @ at start of query.
 -   Improved file search.
 
 ### 1.0.2
+
 -   Add workspace layout shortcuts.
 
 ### 1.0.1
+
 -   Update readme images and fix license date.
 
 ### 1.0.0
+
 -   Initial release of iqgeo-utils-vscode to support code navigation and linting.

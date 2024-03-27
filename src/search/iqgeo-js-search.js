@@ -1,5 +1,5 @@
 const vscode = require('vscode'); // eslint-disable-line
-const Utils = require('./utils');
+const Utils = require('../utils');
 
 const EXTEND_REG = /(\w+)\.extend\s*\(\s*['"](\w+)['"]/;
 const EXTEND_MULTI_REG = /(\w+)\.extend\s*\(\s*$/;

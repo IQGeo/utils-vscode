@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -58,6 +58,10 @@
             {
                 "command": "iqgeo.updateProject",
                 "title": "IQGeo Update Project from .iqgeorc.jsonc"
+            },
+            {
+                "command": "iqgeo.startWatch",
+                "title": "IQGeo Start Watch"
             }
         ],
         "keybindings": [
@@ -204,7 +208,6 @@
                 "command": "iqgeo.addJSDoc",
                 "key": "ctrl+shift+d"
             },
-
             {
                 "command": "iqgeo.goToPreviousSymbol",
                 "key": "ctrl+pageup"
@@ -387,6 +390,20 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Enable workspace layout shortcuts."
+                },
+                "iqgeo-utils-vscode.enableAutoRestart": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable auto restart of Python and browser debug session."
+                },
+                "iqgeo-utils-vscode.watchCommand": {
+                    "type": "string",
+                    "description": "Command to watch for changes in the workspace. Defaults to myw_product watch"
+                },
+                "iqgeo-utils-vscode.restartDelay": {
+                    "type": "integer",
+                    "default": 1500,
+                    "description": "Delay time in ms between a file change and restarting a browser debug session."
                 },
                 "iqgeo-utils-vscode.resizeTerminal": {
                     "type": "boolean",

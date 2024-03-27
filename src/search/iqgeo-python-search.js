@@ -1,5 +1,5 @@
 const vscode = require('vscode'); // eslint-disable-line
-const Utils = require('./utils');
+const Utils = require('../utils');
 
 const PYTHON_CLASS_REG = /^\s*class\s+(\w+)(?:\(((?:\w+,?\s*)*?)\))?:/;
 const PYTHON_DEF_REG = /^\s+def\s+(\w+)\(.*?\):/;
