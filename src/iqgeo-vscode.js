@@ -15,6 +15,7 @@ const IMPORT_REG = /^\s*import\s+(\w*),?\s*{?([\w\s,]*)}?\s*from\s+['"](.*?)['"]
 const IMPORT_MULTI_LINE_REG = /^\s*import\s+/;
 
 const IGNORE_DIRS = ['.git', 'node_modules', 'doc', 'coverage', 'bundles', 'Doc', 'Externals'];
+const IGNORE_FILES = ['__init__.py', /\.bundle\.js$/, /\.min\.js$/, /\.Compiled\.js(\.map)?$/];
 
 const DEBUG = false;
 
@@ -372,43 +373,20 @@ class IQGeoVSCode {
         return sym;
     }
 
-    _isLazyMatch(string, query, consecutive = false) {
+    _isLazyMatch(string, query, groupReg, reg = undefined) {
         const { length } = query;
         if (length === 0) return true; // special case to match all
         if (length > string.length) return false;
 
-        const chars = query.split('');
-        let last = chars.pop();
-        if (last === '.') last = '\\.';
-
-        const groupsStr =
-            chars
-                .map((c) => {
-                    const c1 = c === '.' ? '\\.' : c;
-                    return `${c1}([^${c}]*?)`;
-                })
-                .join('') + last;
-        const groupsReg = new RegExp(groupsStr, 'g');
-
-        if (consecutive) {
-            const str =
-                chars
-                    .map((c) => {
-                        const c1 = c === '.' ? '\\.' : c;
-                        return `${c1}[^${c}]*?`;
-                    })
-                    .join('') + last;
-            const reg = new RegExp(str, 'g');
-
+        if (reg) {
+            // Check all characters are consecutive (with at least 1 other) in the shortest match of the query.
             const allMatches = string.match(reg) || [];
-
             if (allMatches.length === 0) return false;
 
             allMatches.sort((a, b) => a.length - b.length);
 
-            // Check all characters are consecutive (with at least 1 other) in the shortest match of the query.
             const gaps = [];
-            for (const match of allMatches[0].matchAll(groupsReg)) {
+            for (const match of allMatches[0].matchAll(groupReg)) {
                 for (const str of match) {
                     if (str === '.') {
                         gaps.push(0);
@@ -427,7 +405,7 @@ class IQGeoVSCode {
         }
 
         // Matches all characters of query in order and at least 2 characters are consecutive.
-        for (const match of string.matchAll(groupsReg)) {
+        for (const match of string.matchAll(groupReg)) {
             for (const str of match) {
                 if (str.length === 0) return true;
             }
@@ -436,13 +414,40 @@ class IQGeoVSCode {
         return false;
     }
 
-    _matchScoreReg(query) {
+    _lazyMatchGroupReg(query) {
         const chars = query.split('');
-        const last = chars.pop();
+        let last = chars.pop();
+        if (last === '.') last = '\\.';
+
+        const groupsStr =
+            chars
+                .map((c) => {
+                    let c1 = c;
+                    if (c === '.') {
+                        c1 = '\\.';
+                    } else if (c === '\\') {
+                        c1 = '\\\\';
+                    }
+                    return `${c1}([^${c}]*?)`;
+                })
+                .join('') + last;
+        return new RegExp(groupsStr, 'g');
+    }
+
+    _lazyMatchReg(query) {
+        const chars = query.split('');
+        let last = chars.pop();
+        if (last === '.') last = '\\.';
+
         const str =
             chars
                 .map((c) => {
-                    const c1 = c === '.' ? '\\.' : c;
+                    let c1 = c;
+                    if (c === '.') {
+                        c1 = '\\.';
+                    } else if (c === '\\') {
+                        c1 = '\\\\';
+                    }
                     return `${c1}[^${c}]*?`;
                 })
                 .join('') + last;
@@ -462,18 +467,18 @@ class IQGeoVSCode {
         return length - allMatches[0].length;
     }
 
-    _matchString(string, query, matchType) {
+    _matchString(string, query, { type, groupReg, reg }) {
         const stringLC = string.toLowerCase();
-        if (matchType === 0) {
-            return this._isLazyMatch(stringLC, query, true);
+        if (type === 0) {
+            return this._isLazyMatch(stringLC, query, groupReg, reg);
         }
-        if (matchType === 1) {
+        if (type === 1) {
             return stringLC === query;
         }
-        if (matchType === 2) {
+        if (type === 2) {
             return stringLC.startsWith(query);
         }
-        if (matchType === 3) {
+        if (type === 3) {
             return stringLC.endsWith(query);
         }
         return false;
@@ -482,11 +487,11 @@ class IQGeoVSCode {
     _findMethods(
         className,
         methodString,
+        matchOptions,
         languageId,
         symbols,
         doneMethods,
         checkParents,
-        methodMatchType,
         max
     ) {
         const classData = this.getClassData(className, languageId);
@@ -497,7 +502,7 @@ class IQGeoVSCode {
 
             if (
                 !doneMethods.includes(name) &&
-                this._matchString(methodName, methodString, methodMatchType)
+                this._matchString(methodName, methodString, matchOptions)
             ) {
                 const sym = this.getMethodSymbol(name, methodData);
 
@@ -513,11 +518,11 @@ class IQGeoVSCode {
                 this._findMethods(
                     parentClassName,
                     methodString,
+                    matchOptions,
                     languageId,
                     symbols,
                     doneMethods,
                     true,
-                    methodMatchType,
                     max
                 );
 
@@ -529,21 +534,21 @@ class IQGeoVSCode {
     _findInheritedMethods(
         className,
         methodString,
+        matchOptions,
         languageId,
         symbols,
         doneMethods,
-        methodMatchType,
         max
     ) {
         for (const parentClassName of this.getParents(className, languageId)) {
             this._findMethods(
                 parentClassName,
                 methodString,
+                matchOptions,
                 languageId,
                 symbols,
                 doneMethods,
                 false,
-                methodMatchType,
                 max
             );
             if (symbols.length >= max) return;
@@ -551,10 +556,10 @@ class IQGeoVSCode {
             this._findInheritedMethods(
                 parentClassName,
                 methodString,
+                matchOptions,
                 languageId,
                 symbols,
                 doneMethods,
-                methodMatchType,
                 max
             );
             if (symbols.length >= max) return;
@@ -563,8 +568,8 @@ class IQGeoVSCode {
 
     _findClasses(
         classString,
+        matchOptions,
         symbols,
-        matchType,
         max,
         { searchAll = false, languageIds = ['javascript', 'python'] }
     ) {
@@ -576,7 +581,7 @@ class IQGeoVSCode {
             // Only match myw classes or classes that are not in the workspace.
             if (
                 (searchAll || !classData.es || (includeESOutside && !classData.workspace)) &&
-                this._matchString(className, classString, matchType)
+                this._matchString(className, classString, matchOptions)
             ) {
                 const sym = this.getClassSymbol(className, classData);
 
@@ -589,8 +594,8 @@ class IQGeoVSCode {
 
     _findExported(
         methodString,
+        matchOptions,
         symbols,
-        matchType,
         max,
         { searchAll = false, languageIds = ['javascript', 'python'] }
     ) {
@@ -601,7 +606,7 @@ class IQGeoVSCode {
             // Only match exported functions that are not in the workspace.
             if (
                 (searchAll || !methodData.workspace) &&
-                this._matchString(methodName, methodString, matchType)
+                this._matchString(methodName, methodString, matchOptions)
             ) {
                 const sym = this.getMethodSymbol(methodName, methodData);
 
@@ -615,10 +620,13 @@ class IQGeoVSCode {
     _findFiles(query, symbols, max) {
         const symbolFileNames = symbols.map((sym) => sym._fileName);
 
+        const groupReg = this._lazyMatchGroupReg(query);
+        const reg = this._lazyMatchReg(query);
+
         for (const fileName of this.allFiles) {
             if (
                 !symbolFileNames.includes(fileName) &&
-                this._isLazyMatch(fileName.toLowerCase(), query, true)
+                this._isLazyMatch(fileName.toLowerCase(), query, groupReg, reg)
             ) {
                 const sym = this.getFileSymbol(fileName);
 
@@ -632,7 +640,7 @@ class IQGeoVSCode {
 
     _sortSymbols(classString, methodString, symbols) {
         const origQuery = classString ? `${classString}.${methodString}` : methodString;
-        const reg = this._matchScoreReg(origQuery);
+        const reg = this._lazyMatchReg(origQuery);
         const methodReg = new RegExp(`^${methodString}(\\(\\))?$`, 'i');
 
         symbols.sort((a, b) => {
@@ -748,11 +756,24 @@ class IQGeoVSCode {
             const checkParents = classString && !localOnly;
             const includeESOutside = this._includeESOutsideWorkspace();
 
+            const classMatchOptions = classString
+                ? {
+                      type: classMatchType,
+                      groupReg: this._lazyMatchGroupReg(classString),
+                      reg: this._lazyMatchReg(classString),
+                  }
+                : undefined;
+            const methodMatchOptions = {
+                type: methodMatchType,
+                groupReg: this._lazyMatchGroupReg(methodString),
+                reg: this._lazyMatchReg(methodString),
+            };
+
             for (const [className, classData] of this.allClasses()) {
                 if (!languageIds.includes(classData.languageId)) continue;
 
                 if (
-                    (classString && this._matchString(className, classString, classMatchType)) ||
+                    (classString && this._matchString(className, classString, classMatchOptions)) ||
                     (!classString &&
                         (searchAll || !classData.es || (includeESOutside && !classData.workspace)))
                 ) {
@@ -760,21 +781,21 @@ class IQGeoVSCode {
                         this._findInheritedMethods(
                             className,
                             methodString,
+                            methodMatchOptions,
                             classData.languageId,
                             symbols,
                             doneMethods,
-                            methodMatchType,
                             max
                         );
                     } else {
                         this._findMethods(
                             className,
                             methodString,
+                            methodMatchOptions,
                             classData.languageId,
                             symbols,
                             doneMethods,
                             checkParents,
-                            methodMatchType,
                             max
                         );
                     }
@@ -784,14 +805,14 @@ class IQGeoVSCode {
             }
 
             if (searchClasses && !classString && symbols.length < max) {
-                this._findClasses(methodString, symbols, methodMatchType, max, {
+                this._findClasses(methodString, methodMatchOptions, symbols, max, {
                     searchAll,
                     languageIds,
                 });
             }
 
             if (!classString && symbols.length < max) {
-                this._findExported(methodString, symbols, methodMatchType, max, {
+                this._findExported(methodString, methodMatchOptions, symbols, max, {
                     searchAll,
                     languageIds,
                 });
@@ -859,25 +880,36 @@ class IQGeoVSCode {
 
                 finder.on('directory', (dir, stat, stop) => {
                     const base = path.basename(dir);
-                    if (IGNORE_DIRS.includes(base)) {
+                    if (
+                        IGNORE_DIRS.find((ignore) =>
+                            ignore instanceof RegExp ? ignore.test(dir) : ignore === base
+                        )
+                    ) {
                         stop();
                     }
                 });
 
                 finder.on('file', (file) => {
-                    const parts = path.basename(file).split('.');
-                    if (parts[0] !== '__init__' && !file.endsWith('.bundle.js')) {
-                        const ext = parts[parts.length - 1];
-                        for (const config of this._languageConfig) {
-                            if (config.extension === ext) {
-                                nFiles++;
-                                config.searchEngine.updateClasses(file);
-                                this._updateRootFolders(file);
-                                break;
-                            }
-                        }
-                        this.allFiles.add(file);
+                    const base = path.basename(file);
+                    if (
+                        IGNORE_FILES.find((ignore) =>
+                            ignore instanceof RegExp ? ignore.test(file) : ignore === base
+                        )
+                    ) {
+                        return;
                     }
+
+                    const parts = base.split('.');
+                    const ext = parts[parts.length - 1];
+                    for (const config of this._languageConfig) {
+                        if (config.extension === ext) {
+                            nFiles++;
+                            config.searchEngine.updateClasses(file);
+                            this._updateRootFolders(file);
+                            break;
+                        }
+                    }
+                    this.allFiles.add(file);
                 });
 
                 finder.on('end', () => {

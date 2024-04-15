@@ -32,6 +32,7 @@ The extension provides the following features:
    Press Ctrl+Shift+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters. Any defaults will be included.
 
 6. Command to update an IQGeo project based on options in .iqgeorc.jsonc configuration file.<br>
+   "IQGeo Update Project from .iqgeorc.jsonc" is available from the command palette (Ctrl+Cmd+P or Ctrl+Shift+P) or from the right click menu when editing .iqgeorc.jsonc<br>
    See https://github.com/IQGeo/utils-project-template for details.
 
 7. File watch to restart Python or browser debug session when a Python or JavaScript file change respectively.<br>
@@ -148,6 +149,10 @@ Shortcuts to control the layout of the workspace
     ```
 
 ## Release Notes
+
+### 1.0.8
+
+-   Fixes and performance improvements to search.
 
 ### 1.0.7
 
