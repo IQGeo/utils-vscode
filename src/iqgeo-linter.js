@@ -140,7 +140,7 @@ class IQGeoLinter {
         });
     }
 
-    _checkClassComments(classes, fileLines, diagnostics) {
+    _checkClassComments(classes, fileLines, diagnostics, apiSeverity) {
         for (const className of classes) {
             const classData = this.iqgeoVSCode.getClassData(className, 'javascript');
             if (!classData) continue;
@@ -161,7 +161,7 @@ class IQGeoLinter {
                     const d = new vscode.Diagnostic(
                         range,
                         `Class '${className}' does not have API documentation.`,
-                        vscode.DiagnosticSeverity.Error
+                        apiSeverity
                     );
                     diagnostics.push(d);
                 }
@@ -235,7 +235,7 @@ class IQGeoLinter {
         return thirdParty;
     }
 
-    _checkMethodComments(classes, fileName, fileLines, diagnostics) {
+    _checkMethodComments(classes, fileName, fileLines, diagnostics, apiSeverity) {
         const publicMethods = [];
 
         for (const className of classes) {
@@ -275,7 +275,7 @@ class IQGeoLinter {
                     const d = new vscode.Diagnostic(
                         range,
                         `Public method '${methodData.name}' does not have API documentation.`,
-                        vscode.DiagnosticSeverity.Error
+                        apiSeverity
                     );
                     diagnostics.push(d);
                 }
@@ -397,7 +397,8 @@ class IQGeoLinter {
     }
 
     async _checkFile(doc) {
-        if (!vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableLinting) return;
+        const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
+        if (!config.enableLinting) return;
 
         if (
             doc.fileName.includes('/node_modules/') ||
@@ -405,6 +406,9 @@ class IQGeoLinter {
         ) {
             return;
         }
+
+        const apiSeverity =
+            vscode.DiagnosticSeverity[config.apiLintingSeverity] ?? vscode.DiagnosticSeverity.Error;
 
         const fileName = doc.fileName;
         const diagnostics = [];
@@ -425,15 +429,15 @@ class IQGeoLinter {
             this._checkProtectedCalls(line, str, diagnostics);
         }
 
-        if (vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableMethodCheck) {
+        if (config.enableMethodCheck) {
             await this._checkMethodCalls(uri, fileLines, diagnostics);
         }
 
         this._checkProtectedSuperCalls(classes, fileLines, diagnostics);
 
-        this._checkClassComments(classes, fileLines, diagnostics);
+        this._checkClassComments(classes, fileLines, diagnostics, apiSeverity);
 
-        this._checkMethodComments(classes, fileName, fileLines, diagnostics);
+        this._checkMethodComments(classes, fileName, fileLines, diagnostics, apiSeverity);
 
         this.diagnosticCollection.set(uri, diagnostics);
     }

@@ -2,9 +2,9 @@ const vscode = require('vscode'); // eslint-disable-line
 const Utils = require('../utils');
 
 const EXTEND_REG = /(\w+)\.extend\s*\(\s*['"](\w+)['"]/;
-const EXTEND_MULTI_REG = /(\w+)\.extend\s*\(\s*$/;
+const EXTEND_MULTI_LINE_REG = /(\w+)\.extend\s*\(\s*$/;
 const EXTEND_NO_STRING_REG = /(\w+)\s*=.*?(\w+)\.extend\s*\((\s*['"]([\w\s]+)['"]\s*,)?\s*{/;
-const EXTEND_NO_STRING_MULTI_REG = /(\w+)\s*=.*?(\w+)\.extend\s*\(\s*$/;
+const EXTEND_NO_STRING_MULTI_LINE_REG = /(\w+)\s*=.*?(\w+)\.extend\s*\(\s*$/;
 const CLASS_REG = /^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)\s+(?:extends)?.*?(\w+)?\s*{/;
 const NAMESPACE_CLASS_REG = /(?:\w+)\s*=\s*class\s+(\w+)\s+(?:extends)?.*?(\w+)?\s*\)?\s*{/;
 const NAMESPACE_CLASS_MULTI_LINE_REG = /(?:\w+)\s*=\s*class\s+(\w+)\s+(?:extends)\s*\(?/;
@@ -280,7 +280,7 @@ class IQGeoJSSearch {
             return { class: match[1], line, index };
         }
 
-        match = Utils.matchMultiLine(str, line, fileLines, EXTEND_MULTI_REG, EXTEND_REG);
+        match = Utils.matchMultiLine(str, line, fileLines, EXTEND_MULTI_LINE_REG, EXTEND_REG);
         if (match) {
             const index = str.indexOf(match[2]) + match[2].length;
             return {
@@ -295,7 +295,7 @@ class IQGeoJSSearch {
             str,
             line,
             fileLines,
-            EXTEND_NO_STRING_MULTI_REG,
+            EXTEND_NO_STRING_MULTI_LINE_REG,
             EXTEND_NO_STRING_REG
         );
         if (match) {

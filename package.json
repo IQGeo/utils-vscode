@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -375,6 +375,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Enable API and subclassing linting."
+                },
+                "iqgeo-utils-vscode.apiLintingSeverity": {
+                    "type": "string",
+                    "default": "Error",
+                    "description": "Linting severity for missing API comments."
                 },
                 "iqgeo-utils-vscode.enableMethodCheck": {
                     "type": "boolean",
