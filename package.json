@@ -378,6 +378,12 @@
                 },
                 "iqgeo-utils-vscode.apiLintingSeverity": {
                     "type": "string",
+                    "enum": [
+                        "Error",
+                        "Warning",
+                        "Information",
+                        "Hint"
+                    ],
                     "default": "Error",
                     "description": "Linting severity for missing API comments."
                 },
