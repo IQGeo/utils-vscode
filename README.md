@@ -131,6 +131,10 @@ Shortcuts to control the layout of the workspace
     ```json
     "iqgeo-utils-vscode.enableLinting": true
     ```
+-   Defines the linting severity for missing API comments. Can be one of "Error", "Warning", "Information" or "Hint". (Default value is "Error")
+    ```json
+    "iqgeo-utils-vscode.apiLintingSeverity": "Error"
+    ```
 -   Defines whether workspace layout shortcuts are enabled. (Default value is true)
     ```json
     "iqgeo-utils-vscode.enableLayouts": true
@@ -149,6 +153,11 @@ Shortcuts to control the layout of the workspace
     ```
 
 ## Release Notes
+
+### 1.0.9
+
+-   Updated Python search for type hints.
+-   Added config for API linting severity.
 
 ### 1.0.8
 

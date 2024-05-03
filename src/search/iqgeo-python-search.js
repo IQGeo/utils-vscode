@@ -2,8 +2,10 @@ const vscode = require('vscode'); // eslint-disable-line
 const Utils = require('../utils');
 
 const PYTHON_CLASS_REG = /^\s*class\s+(\w+)(?:\(((?:\w+,?\s*)*?)\))?:/;
-const PYTHON_DEF_REG = /^\s+def\s+(\w+)\(.*?\):/;
-const EXPORT_PYTHON_DEF_REG = /^def\s+(\w+)\(.*?\):/;
+const PYTHON_DEF_REG = /^\s+def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
+const PYTHON_DEF_MULTI_LINE_REG = /^\s+def\s+(\w+)\(\s*$/;
+const EXPORT_PYTHON_DEF_REG = /^def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
+const EXPORT_PYTHON_DEF_MULTI_LINE_REG = /^def\s+(\w+)\(\s*$/;
 
 class IQGeoPythonSearch {
     constructor(iqgeoVSCode) {
@@ -49,9 +51,8 @@ class IQGeoPythonSearch {
                 classFound = true; // debug flag
             } else {
                 if (currentClass) {
-                    const defMatch = str.match(PYTHON_DEF_REG);
-                    if (defMatch) {
-                        const methodName = defMatch[1];
+                    const methodName = this._findMethodDef(str, line, fileLines);
+                    if (methodName) {
                         const index = str.indexOf(methodName) + methodName.length;
                         const name = `${methodName}()`;
                         currentClassData.methods[name] = {
@@ -65,9 +66,8 @@ class IQGeoPythonSearch {
                         continue;
                     }
                 }
-                const exportMatch = str.match(EXPORT_PYTHON_DEF_REG);
-                if (exportMatch) {
-                    const functionName = exportMatch[1];
+                const functionName = this._findExportMethodDef(str, line, fileLines);
+                if (functionName) {
                     const index = str.indexOf(functionName) + functionName.length;
                     this.iqgeoVSCode.addExportedFunction(functionName, {
                         fileName,
@@ -89,6 +89,42 @@ class IQGeoPythonSearch {
             } else if (symbolCount === 0) {
                 console.log('No symbols found in', fileName);
             }
+        }
+    }
+
+    _findMethodDef(str, line, fileLines) {
+        let match = str.match(PYTHON_DEF_REG);
+        if (match) {
+            return match[1];
+        }
+
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            PYTHON_DEF_MULTI_LINE_REG,
+            PYTHON_DEF_REG
+        );
+        if (match) {
+            return match[1];
+        }
+    }
+
+    _findExportMethodDef(str, line, fileLines) {
+        let match = str.match(EXPORT_PYTHON_DEF_REG);
+        if (match) {
+            return match[1];
+        }
+
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            EXPORT_PYTHON_DEF_MULTI_LINE_REG,
+            EXPORT_PYTHON_DEF_REG
+        );
+        if (match) {
+            return match[1];
         }
     }
 }
