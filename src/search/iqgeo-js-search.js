@@ -41,6 +41,10 @@ class IQGeoJSSearch {
             if (!fileLines) return;
         }
 
+        if (this.iqgeoVSCode.debug) {
+            console.log('Searching ', fileName);
+        }
+
         const len = fileLines.length;
         const inWorkspace = this.iqgeoVSCode.isWorkspaceFile(fileName);
         let classFound = false; // debug flag

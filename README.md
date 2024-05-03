@@ -154,6 +154,10 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.10
+
+-   Fix Python search where totality is used in class definition.
+
 ### 1.0.9
 
 -   Updated Python search for type hints.

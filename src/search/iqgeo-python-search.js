@@ -1,7 +1,7 @@
 const vscode = require('vscode'); // eslint-disable-line
 const Utils = require('../utils');
 
-const PYTHON_CLASS_REG = /^\s*class\s+(\w+)(?:\(((?:\w+,?\s*)*?)\))?:/;
+const PYTHON_CLASS_REG = /^\s*class\s+(\w+)(?:\(((?:[\w=]+,?\s*)*?)\))?:/;
 const PYTHON_DEF_REG = /^\s+def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
 const PYTHON_DEF_MULTI_LINE_REG = /^\s+def\s+(\w+)\(\s*$/;
 const EXPORT_PYTHON_DEF_REG = /^def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
@@ -16,6 +16,10 @@ class IQGeoPythonSearch {
         if (!fileLines) {
             fileLines = Utils.getFileLines(fileName);
             if (!fileLines) return;
+        }
+
+        if (this.iqgeoVSCode.debug) {
+            console.log('Searching ', fileName);
         }
 
         const len = fileLines.length;
@@ -44,7 +48,7 @@ class IQGeoPythonSearch {
                 if (classMatch[2]) {
                     this.iqgeoVSCode.addParents(
                         currentClass,
-                        classMatch[2].split(/,\s*/),
+                        classMatch[2].split(/,\s*/).filter((p) => !p.includes('=')),
                         'python'
                     );
                 }
