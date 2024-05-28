@@ -1,5 +1,5 @@
-const vscode = require('vscode'); // eslint-disable-line
-const fs = require('fs');
+import vscode from 'vscode';
+import fs from 'fs';
 
 const INVALID_NAME_CHAR = /[^\w]/;
 
@@ -265,7 +265,7 @@ function wait(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-module.exports = {
+export default {
     getFileLines,
     getDocLines,
     removeStrings,

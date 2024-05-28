@@ -1,14 +1,14 @@
-const vscode = require('vscode'); // eslint-disable-line
-const fs = require('fs');
-const path = require('path');
-const find = require('findit');
-const IQGeoSearch = require('./search/iqgeo-search');
-const IQGeoJSSearch = require('./search/iqgeo-js-search');
-const IQGeoPythonSearch = require('./search/iqgeo-python-search');
-const IQGeoLinter = require('./iqgeo-linter');
-const IQGeoJSDoc = require('./iqgeo-jsdoc');
-const IQGeoWatch = require('./iqgeo-watch');
-const Utils = require('./utils');
+import vscode from 'vscode'; // eslint-disable-line
+import fs from 'fs';
+import path from 'path';
+import find from 'findit';
+import { IQGeoSearch } from './search/iqgeo-search';
+import { IQGeoJSSearch } from './search/iqgeo-js-search';
+import { IQGeoPythonSearch } from './search/iqgeo-python-search';
+import { IQGeoLinter } from './iqgeo-linter';
+import { IQGeoJSDoc } from './iqgeo-jsdoc';
+import { IQGeoWatch } from './iqgeo-watch';
+import Utils from './utils';
 
 const PROTOTYPE_CALL_REG = /(\w+)\.prototype\.(\w+)\.(call|apply)\s*\(/;
 const IMPORT_REG = /^\s*import\s+(\w*),?\s*{?([\w\s,]*)}?\s*from\s+['"](.*?)['"];?/;
@@ -26,7 +26,7 @@ const DEBUG = false;
  * - Definitions for JavaScript and Python
  * - Linting for JavaScript APIs
  */
-class IQGeoVSCode {
+export class IQGeoVSCode {
     constructor(context) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.linter = new IQGeoLinter(this);
@@ -1215,7 +1215,7 @@ class IQGeoVSCode {
     }
 
     _isTestFile(fileName) {
-        return /[\/]tests?[\/]/.test(fileName);
+        return /[/]tests?[/]/.test(fileName);
     }
 
     isWorkspaceFile(fileName) {
@@ -1249,5 +1249,3 @@ class IQGeoVSCode {
         );
     }
 }
-
-module.exports = IQGeoVSCode;

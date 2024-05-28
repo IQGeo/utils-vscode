@@ -16,7 +16,7 @@
     "activationEvents": [
         "onStartupFinished"
     ],
-    "main": "./src/main",
+    "main": "./dist/main.cjs",
     "contributes": {
         "commands": [
             {
@@ -425,6 +425,7 @@
         }
     },
     "scripts": {
+        "vscode:prepublish": "node ./scripts/build.mjs",
         "lint": "eslint \"./src/**/*.js\"",
         "lint:fix": "npm run lint -- --fix"
     },
@@ -433,6 +434,7 @@
         "jsonc": "^2.0.0"
     },
     "devDependencies": {
+        "esbuild": "^0.21.3",
         "eslint": "^8.51.0"
     }
 }

@@ -1,7 +1,7 @@
-const vscode = require('vscode'); // eslint-disable-line
-const fs = require('fs');
-const path = require('path');
-const jsonc = require('jsonc');
+import vscode from 'vscode'; // eslint-disable-line
+import fs from 'fs';
+import path from 'path';
+import jsonc from 'jsonc';
 
 const aptGetMappingsBuild = {
     memcached: ['libmemcached-dev'],
@@ -131,7 +131,7 @@ const fileModifications = {
  * Updates a IQGeo project.
  * Project structure should as per https://github.com/IQGeo/utils-project-template with a .iqgeorc.jsonc configuration file
  */
-class IQGeoProjectUpdate {
+export class IQGeoProjectUpdate {
     constructor(context) {
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.updateProject', () => this.update())
@@ -284,5 +284,3 @@ function replaceFetchPipPackages(optionalDeps = [], content) {
     );
     return content;
 }
-
-module.exports = IQGeoProjectUpdate;

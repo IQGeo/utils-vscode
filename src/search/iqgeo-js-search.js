@@ -1,5 +1,5 @@
-const vscode = require('vscode'); // eslint-disable-line
-const Utils = require('../utils');
+import vscode from 'vscode'; // eslint-disable-line
+import Utils from '../utils';
 
 const EXTEND_REG = /(\w+)\.extend\s*\(\s*['"](\w+)['"]/;
 const EXTEND_MULTI_LINE_REG = /(\w+)\.extend\s*\(\s*$/;
@@ -14,7 +14,7 @@ const EXPORT_MIXIN_REG = /^export\s+(?:(?:default|const)\s+)*(\w+(Mixin)?)\s*=\s
 const CLASS_ASSIGN_REG = /(?:^|\s+)Object\.assign\(.*?(\w+)\.prototype,\s*(\w+)\)/;
 const PROPERTY_REG = /^\s*#?(\w+):/;
 const SETTER_OR_GETTER_REG = /^\s*(?:(?:set|get)\s+)(\w+)\s*\(/;
-const FUNCTION_REG = /^\s*(?:async\s+|static\s+|#)?\*?(\w+)\s*\(([\w,\s={}\[\]'"]|\.{3})*?\)\s*{/;
+const FUNCTION_REG = /^\s*(?:async\s+|static\s+|#)?\*?(\w+)\s*\(([\w,\s={}[\]'"]|\.{3})*?\)\s*{/;
 const FUNCTION_MULTI_LINE_REG = /^\s*(async\s*|static\s*|#)?\*?\w+\s*\(\s*$/;
 const CONST_FUNCTION_REG = /^const\s+(\w+)\s*=\s*(?:async\s+)?function\*?\s*\(/;
 const CONST_ARROW_FUNCTION_REG = /^const\s+(\w+)\s*=[^;]*?\s+=>\s+/;
@@ -30,7 +30,7 @@ const LITERAL_BEFORE_QUOTE_REG = /^[^'"]*`/;
 const INC_BRACKETS = /(?<!%)[{]/g;
 const DEC_BRACKETS = /(?<!%)[}]/g;
 
-class IQGeoJSSearch {
+export class IQGeoJSSearch {
     constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
     }
@@ -438,5 +438,3 @@ class IQGeoJSSearch {
         return false;
     }
 }
-
-module.exports = IQGeoJSSearch;
