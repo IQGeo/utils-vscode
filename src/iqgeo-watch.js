@@ -1,7 +1,7 @@
-const vscode = require('vscode'); // eslint-disable-line
-const fs = require('fs');
-const path = require('path');
-const Utils = require('./utils');
+import vscode from 'vscode'; // eslint-disable-line
+import fs from 'fs';
+import path from 'path';
+import Utils from './utils';
 
 const CLIENT_DEBUG_TYPES = [
     'chrome',
@@ -14,7 +14,7 @@ const CLIENT_DEBUG_TYPES = [
 /**
  * The IQGeoWatch class is responsible for starting the webpack watch and restarting the client debug session when a file is saved.
  */
-class IQGeoWatch {
+export class IQGeoWatch {
     constructor(iqgeoVSCode, context) {
         this.iqgeoVSCode = iqgeoVSCode;
 
@@ -129,5 +129,3 @@ class IQGeoWatch {
         return !!this.pythonTerminal;
     }
 }
-
-module.exports = IQGeoWatch;

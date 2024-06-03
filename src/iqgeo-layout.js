@@ -1,4 +1,4 @@
-const vscode = require('vscode'); // eslint-disable-line
+import vscode from 'vscode'; // eslint-disable-line
 
 const LAYOUT_CONFIG = [
     {
@@ -68,15 +68,15 @@ const LAYOUT_CONFIG = [
         name: 'editorGroup',
         commands: [
             'workbench.action.focusActiveEditorGroup',
-            'workbench.action.toggleMaximizeEditorGroup'
+            'workbench.action.toggleMaximizeEditorGroup',
         ],
-    }
+    },
 ];
 
 /**
  * Provide workspace layout commands for the IQGeo extension.
  */
-class IQGeoLayout {
+export class IQGeoLayout {
     constructor(context) {
         if (vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableLayouts) {
             this._addLayouts(context);
@@ -84,7 +84,7 @@ class IQGeoLayout {
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.toggleTerminalFocus', async (args) => {
-                await this._toggleTerminalFocus(args.editorFocus)
+                await this._toggleTerminalFocus(args.editorFocus);
             })
         );
     }
@@ -116,5 +116,3 @@ class IQGeoLayout {
         }
     }
 }
-
-module.exports = IQGeoLayout;

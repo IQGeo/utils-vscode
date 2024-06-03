@@ -1,21 +1,16 @@
-const IQGeoVSCode = require("./iqgeo-vscode");
-const IQGeoLayout = require("./iqgeo-layout");
-const IQGeoProjectUpdate = require('./iqgeo-project-update');
+import { IQGeoVSCode } from './iqgeo-vscode';
+import { IQGeoLayout } from './iqgeo-layout';
+import { IQGeoProjectUpdate } from './iqgeo-project-update';
 
 let iqgeoVSCode;
 
-function activate(context) {
+export function activate(context) {
     iqgeoVSCode = new IQGeoVSCode(context);
     new IQGeoLayout(context);
     new IQGeoProjectUpdate(context);
     iqgeoVSCode.onActivation();
 }
 
-function deactivate() {
+export function deactivate() {
     iqgeoVSCode.onDeactivation();
 }
-
-module.exports = {
-    activate,
-    deactivate
-};

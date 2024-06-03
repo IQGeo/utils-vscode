@@ -1,5 +1,5 @@
-const vscode = require('vscode'); // eslint-disable-line
-const Utils = require('./utils');
+import vscode from 'vscode'; // eslint-disable-line
+import Utils from './utils';
 
 const PROTECTED_CALL_REG = /(\w+)(?<!this)\.(_\w+)\(?/g;
 const METHOD_CALL_REG = /(\w+(?:\(.*?\))?)\.(\w+)\(/;
@@ -109,7 +109,7 @@ const IGNORE_METHOD_NAMES = [
  * - Subclassed protected methods without call to super
  * - Method calls that can't be resolved
  */
-class IQGeoLinter {
+export class IQGeoLinter {
     constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
 
@@ -354,7 +354,7 @@ class IQGeoLinter {
                 ) {
                     let found = false;
 
-                    for (const [className, classData] of this.iqgeoVSCode.allClasses()) {
+                    for (const [, classData] of this.iqgeoVSCode.allClasses()) {
                         const methods = classData.methods;
                         if (methods[`${methodName}()`]) {
                             found = true;
@@ -458,5 +458,3 @@ class IQGeoLinter {
         }
     }
 }
-
-module.exports = IQGeoLinter;

@@ -1,5 +1,5 @@
-const vscode = require('vscode'); // eslint-disable-line
-const Utils = require('../utils');
+import vscode from 'vscode'; // eslint-disable-line
+import Utils from '../utils';
 
 const PYTHON_CLASS_REG = /^\s*class\s+(\w+)(?:\(((?:[\w=]+,?\s*)*?)\))?:/;
 const PYTHON_DEF_REG = /^\s+def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
@@ -7,7 +7,7 @@ const PYTHON_DEF_MULTI_LINE_REG = /^\s+def\s+(\w+)\(\s*$/;
 const EXPORT_PYTHON_DEF_REG = /^def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
 const EXPORT_PYTHON_DEF_MULTI_LINE_REG = /^def\s+(\w+)\(\s*$/;
 
-class IQGeoPythonSearch {
+export class IQGeoPythonSearch {
     constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
     }
@@ -132,5 +132,3 @@ class IQGeoPythonSearch {
         }
     }
 }
-
-module.exports = IQGeoPythonSearch;

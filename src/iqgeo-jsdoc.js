@@ -1,7 +1,7 @@
-const vscode = require('vscode'); // eslint-disable-line
-const Utils = require('./utils');
+import vscode from 'vscode'; // eslint-disable-line
+import Utils from './utils';
 
-class IQGeoJSDoc {
+export class IQGeoJSDoc {
     constructor(iqgeoVSCode, context) {
         this.iqgeoVSCode = iqgeoVSCode;
 
@@ -90,7 +90,7 @@ class IQGeoJSDoc {
     _getParamsForSymbol(sym, fileLines) {
         const symLine = sym.location.range.start.line;
         const length = Math.min(symLine + 16, fileLines.length);
-        const paramReg = /(?:\((.*?)\)\s+(?:\{|=>)|(\w+)\s*=>)/
+        const paramReg = /(?:\((.*?)\)\s+(?:\{|=>)|(\w+)\s*=>)/;
         const paramNames = [];
 
         const addParams = (str, prefix = '') => {
@@ -131,5 +131,3 @@ class IQGeoJSDoc {
         return paramNames;
     }
 }
-
-module.exports = IQGeoJSDoc;

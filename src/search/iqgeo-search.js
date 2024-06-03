@@ -1,17 +1,17 @@
-const vscode = require('vscode'); // eslint-disable-line
-const fs = require('fs');
-const path = require('path');
-const Utils = require('../utils');
+import vscode from 'vscode'; // eslint-disable-line
+import fs from 'fs';
+import path from 'path';
+import Utils from '../utils';
 
 const LANGUAGE_MAP = {
-    'js': 'javascript',
-    'py': 'python',
-    'yml': 'yaml',
-    'md': 'markdown',
-    'txt': 'plaintext',
+    js: 'javascript',
+    py: 'python',
+    yml: 'yaml',
+    md: 'markdown',
+    txt: 'plaintext',
 };
 
-class IQGeoSearch {
+export class IQGeoSearch {
     constructor(iqgeoVSCode, context) {
         this.iqgeoVSCode = iqgeoVSCode;
 
@@ -365,9 +365,11 @@ class IQGeoSearch {
             this._fileIconConfig = null;
 
             const extName = vscode.workspace.getConfiguration('workbench').iconTheme;
-            let ext = vscode.extensions.all.find(ext => ext.id.endsWith(extName));
+            let ext = vscode.extensions.all.find((ext) => ext.id.endsWith(extName));
             if (!ext) {
-                ext = vscode.extensions.all.filter(ext => ext.isActive && ext.packageJSON.contributes.iconThemes)[0];
+                ext = vscode.extensions.all.filter(
+                    (ext) => ext.isActive && ext.packageJSON.contributes.iconThemes
+                )[0];
             }
 
             if (ext) {
@@ -386,7 +388,9 @@ class IQGeoSearch {
         if (!this._fileIconConfig) return;
 
         let key = path.basename(fileName);
-        let id = this._fileIconConfig.fileNames[key] ?? this._fileIconConfig.fileNames[key.toLowerCase()];
+        let id =
+            this._fileIconConfig.fileNames[key] ??
+            this._fileIconConfig.fileNames[key.toLowerCase()];
         if (!id) {
             const parts = key.split('.');
             key = parts.length > 2 ? parts.slice(-2).join('.') : parts.slice(-1)[0];
@@ -428,5 +432,3 @@ class IQGeoSearch {
         return fileName;
     }
 }
-
-module.exports = IQGeoSearch;
