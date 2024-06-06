@@ -84,7 +84,7 @@ export class IQGeoLayout {
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.toggleTerminalFocus', async (args) => {
-                await this._toggleTerminalFocus(args.editorFocus);
+                await this._toggleTerminalFocus(args.terminalFocus);
             })
         );
     }
@@ -100,19 +100,19 @@ export class IQGeoLayout {
         }
     }
 
-    async _toggleTerminalFocus(editorFocus) {
+    async _toggleTerminalFocus(terminalFocus) {
         if (vscode.workspace.getConfiguration('iqgeo-utils-vscode').resizeTerminal) {
-            if (editorFocus) {
-                await vscode.commands.executeCommand('workbench.action.terminal.resizePaneUp');
-            } else {
+            if (terminalFocus) {
                 await vscode.commands.executeCommand('workbench.action.terminal.resizePaneDown');
+            } else {
+                await vscode.commands.executeCommand('workbench.action.terminal.resizePaneUp');
             }
         }
 
-        if (editorFocus) {
-            await vscode.commands.executeCommand('workbench.action.terminal.focus');
-        } else {
+        if (terminalFocus) {
             await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
+        } else {
+            await vscode.commands.executeCommand('workbench.action.terminal.focus');
         }
     }
 }

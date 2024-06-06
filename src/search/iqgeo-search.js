@@ -88,7 +88,7 @@ export class IQGeoSearch {
         vscode.commands.executeCommand(commandName, {
             query,
             filesToInclude: folder,
-            filesToExclude: '*.txt, *.csv, *.svg, *.*_config, node_modules, bundles',
+            filesToExclude: '*.txt, *.csv, *.svg, *.*_config, node_modules, bundles, dist',
         });
     }
 

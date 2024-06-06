@@ -154,6 +154,11 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.11
+
+-   Move project update to separate package.
+-   Convert CJS modules to ESM.
+
 ### 1.0.10
 
 -   Fix Python search where totality is used in class definition.
