@@ -14,4 +14,7 @@ esbuild.build({
     bundle: true,
     sourcemap: true,
     external: ['vscode'],
+    // TBR: this is a workaround until https://github.com/microsoft/node-jsonc-parser/pull/78 is merged.
+    // `project-update` relies on that package and will be bundled incorrectly otherwise
+    mainFields: ['module', 'main'],
 });

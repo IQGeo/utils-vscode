@@ -60,6 +60,10 @@
                 "title": "IQGeo Update Project from .iqgeorc.jsonc"
             },
             {
+                "command": "iqgeo.pullTemplate",
+                "title": "IQGeo Pull and merge files from project-template"
+            },
+            {
                 "command": "iqgeo.startWatch",
                 "title": "IQGeo Start Watch"
             }

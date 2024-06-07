@@ -1,6 +1,6 @@
 import vscode from 'vscode'; // eslint-disable-line
 
-import { update } from 'project-update';
+import { pull, update } from 'project-update';
 
 /**
  * Updates a IQGeo project.
@@ -9,7 +9,8 @@ import { update } from 'project-update';
 export class IQGeoProjectUpdate {
     constructor(context) {
         context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.updateProject', () => this._update())
+            vscode.commands.registerCommand('iqgeo.updateProject', () => this._update()),
+            vscode.commands.registerCommand('iqgeo.pullTemplate', () => this._pull())
         );
     }
 
@@ -21,6 +22,22 @@ export class IQGeoProjectUpdate {
         update({
             root,
             progress: {
+                log: (level, info) => vscode.window.showInformationMessage(info),
+                warn: (level, info) => vscode.window.showWarningMessage(info),
+                error: (level, info) => vscode.window.showErrorMessage(info),
+            },
+        });
+    }
+
+    async _pull() {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) return;
+        const out = workspaceFolders[0].uri.fsPath;
+
+        pull({
+            out,
+            progress: {
+                // TODO: handle different log levels?
                 log: (level, info) => vscode.window.showInformationMessage(info),
                 warn: (level, info) => vscode.window.showWarningMessage(info),
                 error: (level, info) => vscode.window.showErrorMessage(info),
