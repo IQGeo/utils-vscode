@@ -7,12 +7,47 @@ import { pull, update } from 'project-update';
  * Project structure should as per https://github.com/IQGeo/utils-project-template with a .iqgeorc.jsonc configuration file
  */
 export class IQGeoProjectUpdate {
-    constructor(context) {
+    /** @param {vscode.OutputChannel} outputChannel */
+    constructor(context, outputChannel) {
+        this.outputChannel = outputChannel;
+
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.updateProject', () => this._update()),
             vscode.commands.registerCommand('iqgeo.pullTemplate', () => this._pull())
         );
     }
+
+    _progressHandlers = {
+        log: (level, info, moreDetails) => {
+            if (moreDetails) {
+                vscode.window.showInformationMessage(
+                    `${info} ([details](command:iqgeo.showOutput))`
+                );
+
+                this.outputChannel.appendLine(moreDetails);
+            } else {
+                vscode.window.showInformationMessage(info);
+            }
+        },
+        warn: (level, info, moreDetails) => {
+            if (moreDetails) {
+                vscode.window.showWarningMessage(`${info} ([details](command:iqgeo.showOutput))`);
+
+                this.outputChannel.appendLine(moreDetails);
+            } else {
+                vscode.window.showWarningMessage(info);
+            }
+        },
+        error: (level, info, moreDetails) => {
+            if (moreDetails) {
+                vscode.window.showErrorMessage(`${info} ([details](command:iqgeo.showOutput))`);
+
+                this.outputChannel.appendLine(moreDetails);
+            } else {
+                vscode.window.showErrorMessage(info);
+            }
+        },
+    };
 
     async _update() {
         const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -21,11 +56,7 @@ export class IQGeoProjectUpdate {
 
         update({
             root,
-            progress: {
-                log: (level, info) => vscode.window.showInformationMessage(info),
-                warn: (level, info) => vscode.window.showWarningMessage(info),
-                error: (level, info) => vscode.window.showErrorMessage(info),
-            },
+            progress: this._progressHandlers,
         });
     }
 
@@ -34,14 +65,17 @@ export class IQGeoProjectUpdate {
         if (!workspaceFolders) return;
         const out = workspaceFolders[0].uri.fsPath;
 
-        pull({
-            out,
-            progress: {
-                // TODO: handle different log levels?
-                log: (level, info) => vscode.window.showInformationMessage(info),
-                warn: (level, info) => vscode.window.showWarningMessage(info),
-                error: (level, info) => vscode.window.showErrorMessage(info),
+        vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Pulling project-template',
             },
-        });
+            () => {
+                return pull({
+                    out,
+                    progress: this._progressHandlers,
+                });
+            }
+        );
     }
 }

@@ -27,11 +27,12 @@ const DEBUG = false;
  * - Linting for JavaScript APIs
  */
 export class IQGeoVSCode {
-    constructor(context) {
+    constructor(context, outputChannel) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.linter = new IQGeoLinter(this);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
         this.watchManager = new IQGeoWatch(this, context);
+        this.outputChannel = outputChannel;
 
         this.symbols = {};
         this.classes = new Map();
@@ -1025,9 +1026,6 @@ export class IQGeoVSCode {
             esClasses: summary.esClasses,
         };
 
-        if (!this.outputChannel) {
-            this.outputChannel = vscode.window.createOutputChannel('IQGeo VSCode');
-        }
         this.outputChannel.appendLine(JSON.stringify(info, null, 2));
         this.outputChannel.show(true);
     }
