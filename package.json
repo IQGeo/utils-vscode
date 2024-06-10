@@ -334,6 +334,11 @@
                     "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
+                },
+                {
+                    "when": "resourceFilename == .iqgeorc.jsonc",
+                    "command": "iqgeo.pullTemplate",
+                    "group": "iqgeo"
                 }
             ],
             "editor/title/context": [
@@ -341,12 +346,22 @@
                     "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
+                },
+                {
+                    "when": "resourceFilename == .iqgeorc.jsonc",
+                    "command": "iqgeo.pullTemplate",
+                    "group": "iqgeo"
                 }
             ],
             "explorer/context": [
                 {
                     "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
+                    "group": "iqgeo"
+                },
+                {
+                    "when": "resourceFilename == .iqgeorc.jsonc",
+                    "command": "iqgeo.pullTemplate",
                     "group": "iqgeo"
                 }
             ]
