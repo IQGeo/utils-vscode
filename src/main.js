@@ -7,10 +7,10 @@ import { IQGeoProjectUpdate } from './iqgeo-project-update';
 let iqgeoVSCode;
 
 export function activate(context) {
-    const outputChannel = vscode.window.createOutputChannel('IQGeo');
+    const outputChannel = vscode.window.createOutputChannel('IQGeo', { log: true });
 
     vscode.commands.registerCommand('iqgeo.showOutput', () => {
-        this.outputChannel.show();
+        outputChannel.show(true);
     });
 
     iqgeoVSCode = new IQGeoVSCode(context, outputChannel);

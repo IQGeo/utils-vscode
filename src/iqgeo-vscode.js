@@ -1,6 +1,7 @@
 import vscode from 'vscode'; // eslint-disable-line
 import fs from 'fs';
 import path from 'path';
+import util from 'util';
 import find from 'findit';
 import { IQGeoSearch } from './search/iqgeo-search';
 import { IQGeoJSSearch } from './search/iqgeo-js-search';
@@ -27,6 +28,10 @@ const DEBUG = false;
  * - Linting for JavaScript APIs
  */
 export class IQGeoVSCode {
+    /**
+     * @param {vscode.ExtensionContext} context
+     * @param {vscode.LogOutputChannel} outputChannel
+     */
     constructor(context, outputChannel) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.linter = new IQGeoLinter(this);
@@ -1026,7 +1031,7 @@ export class IQGeoVSCode {
             esClasses: summary.esClasses,
         };
 
-        this.outputChannel.appendLine(JSON.stringify(info, null, 2));
+        this.outputChannel.info(util.format(info));
         this.outputChannel.show(true);
     }
 

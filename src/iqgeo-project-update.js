@@ -1,4 +1,5 @@
 import vscode from 'vscode'; // eslint-disable-line
+import util from 'util';
 
 import { pull, update } from 'project-update';
 
@@ -7,7 +8,7 @@ import { pull, update } from 'project-update';
  * Project structure should as per https://github.com/IQGeo/utils-project-template with a .iqgeorc.jsonc configuration file
  */
 export class IQGeoProjectUpdate {
-    /** @param {vscode.OutputChannel} outputChannel */
+    /** @param {vscode.LogOutputChannel} outputChannel */
     constructor(context, outputChannel) {
         this.outputChannel = outputChannel;
 
@@ -17,6 +18,7 @@ export class IQGeoProjectUpdate {
         );
     }
 
+    /** @type {import('project-update').ProgressHandler} */
     _progressHandlers = {
         log: (level, info, moreDetails) => {
             if (moreDetails) {
@@ -24,7 +26,8 @@ export class IQGeoProjectUpdate {
                     `${info} ([details](command:iqgeo.showOutput))`
                 );
 
-                this.outputChannel.appendLine(moreDetails);
+                this.outputChannel.info(util.format(info));
+                this.outputChannel.info(util.format(moreDetails));
             } else {
                 vscode.window.showInformationMessage(info);
             }
@@ -33,7 +36,8 @@ export class IQGeoProjectUpdate {
             if (moreDetails) {
                 vscode.window.showWarningMessage(`${info} ([details](command:iqgeo.showOutput))`);
 
-                this.outputChannel.appendLine(moreDetails);
+                this.outputChannel.warn(util.format(info));
+                this.outputChannel.warn(util.format(moreDetails));
             } else {
                 vscode.window.showWarningMessage(info);
             }
@@ -42,7 +46,8 @@ export class IQGeoProjectUpdate {
             if (moreDetails) {
                 vscode.window.showErrorMessage(`${info} ([details](command:iqgeo.showOutput))`);
 
-                this.outputChannel.appendLine(moreDetails);
+                this.outputChannel.error(util.format(info));
+                this.outputChannel.error(util.format(moreDetails));
             } else {
                 vscode.window.showErrorMessage(info);
             }
