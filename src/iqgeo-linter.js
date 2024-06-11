@@ -1,4 +1,5 @@
 import vscode from 'vscode'; // eslint-disable-line
+import util from 'util';
 import Utils from './utils';
 
 const PROTECTED_CALL_REG = /(\w+)(?<!this)\.(_\w+)\(?/g;
@@ -117,21 +118,17 @@ export class IQGeoLinter {
 
         vscode.workspace.onDidOpenTextDocument((doc) => {
             if (doc.languageId === 'javascript') {
-                try {
-                    this._checkFile(doc);
-                } catch (error) {
-                    console.error(error);
-                }
+                this._checkFile(doc).catch((err) => {
+                    this.iqgeoVSCode.outputChannel.error(util.format(err));
+                });
             }
         });
 
         vscode.workspace.onDidSaveTextDocument((doc) => {
             if (doc.languageId === 'javascript') {
-                try {
-                    this._checkFile(doc);
-                } catch (error) {
-                    console.error(error);
-                }
+                this._checkFile(doc).catch((err) => {
+                    this.iqgeoVSCode.outputChannel.error(util.format(err));
+                });
             }
         });
 
@@ -449,11 +446,9 @@ export class IQGeoLinter {
     checkOpenFiles() {
         for (const doc of vscode.workspace.textDocuments) {
             if (doc.languageId === 'javascript') {
-                try {
-                    this._checkFile(doc);
-                } catch (error) {
-                    console.error(error);
-                }
+                this._checkFile(doc).catch((err) => {
+                    this.iqgeoVSCode.outputChannel.error(util.format(err));
+                });
             }
         }
     }

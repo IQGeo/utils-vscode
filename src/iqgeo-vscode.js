@@ -943,7 +943,7 @@ export class IQGeoVSCode {
                     this.clearDataForFile(doc.fileName);
                     config.searchEngine.updateClasses(doc.fileName, fileLines);
                 } catch (error) {
-                    console.error(error);
+                    this.outputChannel.error(util.format(error));
                 }
                 break;
             }
@@ -983,7 +983,7 @@ export class IQGeoVSCode {
             if (searchSummary) {
                 this._showSearchSummary(summary);
             } else {
-                console.log(summary);
+                this.outputChannel.info(util.format(summary));
             }
         }
     }
