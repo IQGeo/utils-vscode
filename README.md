@@ -31,11 +31,15 @@ The extension provides the following features:
 5. Command to create JSDoc comment for a function or class.<br>
    Press Ctrl+Shift+D when the cursor is on the definition line to create a JSDoc comment populated with the parameters. Any defaults will be included.
 
-6. Command to update an IQGeo project based on options in .iqgeorc.jsonc configuration file.<br>
-   "IQGeo Update Project from .iqgeorc.jsonc" is available from the command palette (Ctrl+Cmd+P or Ctrl+Shift+P) or from the right click menu when editing .iqgeorc.jsonc<br>
-   See https://github.com/IQGeo/utils-project-template for details.
+6. Command to update an IQGeo project based on options in `.iqgeorc.jsonc` configuration file.<br>
+   "IQGeo Update Project from .iqgeorc.jsonc" is available from the command palette (Ctrl+Cmd+P or Ctrl+Shift+P) or from the right click menu when editing `.iqgeorc.jsonc`.<br>
+   See [`utils-project-template`](https://github.com/IQGeo/utils-project-template) and [`utils-project-update`](https://github.com/IQGeo/utils-project-update#default-update) for details.
 
-7. File watch to restart Python or browser debug session when a Python or JavaScript file change respectively.<br>
+7. Command to pull and merge latest changes from [`utils-project-template`](https://github.com/IQGeo/utils-project-template) with existing project files.<br>
+   "IQGeo Pull and merge files from project-template" is available from the command palette (Ctrl+Cmd+P or Ctrl+Shift+P) or from the right click menu when editing `.iqgeorc.jsonc`.<br>
+   See [`utils-project-template`](https://github.com/IQGeo/utils-project-template) and [`utils-project-update`](https://github.com/IQGeo/utils-project-update#pull) for details.
+
+8. File watch to restart Python or browser debug session when a Python or JavaScript file change respectively.<br>
    This functionality is enabled when **iqgeo-utils-vscode.enableAutoRestart** is set to true.<br>
    The extension uses one terminal to restart the Python environment and another to run a Javascript file watch. A browser debug session (if active) will be restarted when a JavaScript file is saved.<br>
    The watch can be started using the command 'IQGeo Start Watch'.<br>
