@@ -35,8 +35,6 @@ function getProgressMethod(notificationCb, outputCb) {
 export class IQGeoProjectUpdate {
     /** @param {vscode.LogOutputChannel} outputChannel */
     constructor(context, outputChannel) {
-        this.outputChannel = outputChannel;
-
         /** @type {ProgressHandler} */
         this._progressHandler = {
             log: getProgressMethod(vscode.window.showInformationMessage, outputChannel.info),
