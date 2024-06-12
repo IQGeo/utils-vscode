@@ -37,17 +37,17 @@ export class IQGeoProjectUpdate {
     constructor(context, outputChannel) {
         this.outputChannel = outputChannel;
 
-        context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.updateProject', () => this._update()),
-            vscode.commands.registerCommand('iqgeo.pullTemplate', () => this._pull())
-        );
-
         /** @type {ProgressHandler} */
-        this._progressHandlers = {
+        this._progressHandler = {
             log: getProgressMethod(vscode.window.showInformationMessage, outputChannel.info),
             warn: getProgressMethod(vscode.window.showWarningMessage, outputChannel.warn),
             error: getProgressMethod(vscode.window.showErrorMessage, outputChannel.error),
         };
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('iqgeo.updateProject', () => this._update()),
+            vscode.commands.registerCommand('iqgeo.pullTemplate', () => this._pull())
+        );
     }
 
     async _update() {
@@ -57,7 +57,7 @@ export class IQGeoProjectUpdate {
 
         update({
             root,
-            progress: this._progressHandlers,
+            progress: this._progressHandler,
         });
     }
 
@@ -74,7 +74,7 @@ export class IQGeoProjectUpdate {
             () => {
                 return pull({
                     out,
-                    progress: this._progressHandlers,
+                    progress: this._progressHandler,
                 });
             }
         );
