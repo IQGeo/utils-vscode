@@ -4,8 +4,10 @@ import util from 'util';
 
 import { pull, update } from 'project-update';
 
+import utils from './utils';
+
 /**
- * @param {(msg: string) => void} notificationCb
+ * @param {(msg: string, items?: string) => Thenable<string | undefined>} notificationCb
  * @param {(msg: string) => void} outputCb
  * @returns {ProgressHandler[keyof ProgressHandler]}
  */
@@ -13,7 +15,7 @@ function getProgressMethod(notificationCb, outputCb) {
     return (level, info, moreDetails) => {
         if (moreDetails) {
             if (level === 1) {
-                notificationCb(`${info} ([details](command:iqgeo.showOutput))`);
+                utils.showMessageWithDetails(notificationCb, info);
             }
 
             outputCb(util.format(info));
