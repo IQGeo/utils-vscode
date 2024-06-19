@@ -1,6 +1,7 @@
 import vscode from 'vscode'; // eslint-disable-line
 import fs from 'fs';
 import path from 'path';
+import util from 'util';
 import Utils from '../utils';
 
 const LANGUAGE_MAP = {
@@ -379,7 +380,7 @@ export class IQGeoSearch {
                     this._fileIconConfig = JSON.parse(fs.readFileSync(configPath).toString());
                     this._fileIconConfig._configPath = path.dirname(configPath);
                 } catch (e) {
-                    console.log(e);
+                    this.iqgeoVSCode.outputChannel.error(util.format(e));
                     return;
                 }
             }

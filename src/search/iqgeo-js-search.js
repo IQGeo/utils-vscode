@@ -166,7 +166,7 @@ export class IQGeoJSSearch {
             }
         }
 
-        if (this.iqgeoVSCode.DEBUG) {
+        if (this.iqgeoVSCode.debug) {
             if (!classFound && symbolCount === 0) {
                 console.log('No class or symbols found in', fileName);
             } else if (!classFound) {

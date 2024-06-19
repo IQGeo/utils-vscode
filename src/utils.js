@@ -49,6 +49,28 @@ function getDocLines(doc) {
     return lines;
 }
 
+/**
+ * Shows a VSCode message with a 'Show Details' button that will open the output channel when clicked.
+ *
+ * @param {"info" | "warn" | "error" | ((msg: string) => void)} levelOrFn
+ * @param {string} message
+ */
+async function showMessageWithDetails(levelOrFn, message) {
+    const showMessageMap = {
+        info: vscode.window.showInformationMessage,
+        warn: vscode.window.showWarningMessage,
+        error: vscode.window.showErrorMessage,
+    };
+
+    const showMessageFn = typeof levelOrFn === 'string' ? showMessageMap[levelOrFn] : levelOrFn;
+
+    const clickedItem = await showMessageFn(message, 'Show Details');
+
+    if (clickedItem === 'Show Details') {
+        vscode.commands.executeCommand('iqgeo.showOutput');
+    }
+}
+
 function removeStrings(str) {
     if (!/['"]/.test(str)) return str;
 
@@ -268,6 +290,7 @@ function wait(ms) {
 export default {
     getFileLines,
     getDocLines,
+    showMessageWithDetails,
     removeStrings,
     removeLiterals,
     removeComments,

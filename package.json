@@ -60,6 +60,10 @@
                 "title": "IQGeo Update Project from .iqgeorc.jsonc"
             },
             {
+                "command": "iqgeo.pullTemplate",
+                "title": "IQGeo Pull and merge files from project-template"
+            },
+            {
                 "command": "iqgeo.startWatch",
                 "title": "IQGeo Start Watch"
             }
@@ -330,6 +334,11 @@
                     "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
+                },
+                {
+                    "when": "resourceFilename == .iqgeorc.jsonc",
+                    "command": "iqgeo.pullTemplate",
+                    "group": "iqgeo"
                 }
             ],
             "editor/title/context": [
@@ -337,12 +346,22 @@
                     "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
                     "group": "iqgeo"
+                },
+                {
+                    "when": "resourceFilename == .iqgeorc.jsonc",
+                    "command": "iqgeo.pullTemplate",
+                    "group": "iqgeo"
                 }
             ],
             "explorer/context": [
                 {
                     "when": "resourceFilename == .iqgeorc.jsonc",
                     "command": "iqgeo.updateProject",
+                    "group": "iqgeo"
+                },
+                {
+                    "when": "resourceFilename == .iqgeorc.jsonc",
+                    "command": "iqgeo.pullTemplate",
                     "group": "iqgeo"
                 }
             ]
@@ -431,7 +450,7 @@
     },
     "dependencies": {
         "findit": "^2.0.0",
-        "project-update": "github:IQGeo/utils-project-update#v0.2.0"
+        "project-update": "github:IQGeo/utils-project-update#v0.3.1"
     },
     "devDependencies": {
         "esbuild": "^0.21.3",

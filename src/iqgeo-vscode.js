@@ -1,6 +1,7 @@
 import vscode from 'vscode'; // eslint-disable-line
 import fs from 'fs';
 import path from 'path';
+import util from 'util';
 import find from 'findit';
 import { IQGeoSearch } from './search/iqgeo-search';
 import { IQGeoJSSearch } from './search/iqgeo-js-search';
@@ -27,11 +28,16 @@ const DEBUG = false;
  * - Linting for JavaScript APIs
  */
 export class IQGeoVSCode {
-    constructor(context) {
+    /**
+     * @param {vscode.ExtensionContext} context
+     * @param {vscode.LogOutputChannel} outputChannel
+     */
+    constructor(context, outputChannel) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.linter = new IQGeoLinter(this);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
         this.watchManager = new IQGeoWatch(this, context);
+        this.outputChannel = outputChannel;
 
         this.symbols = {};
         this.classes = new Map();
@@ -937,7 +943,7 @@ export class IQGeoVSCode {
                     this.clearDataForFile(doc.fileName);
                     config.searchEngine.updateClasses(doc.fileName, fileLines);
                 } catch (error) {
-                    console.error(error);
+                    this.outputChannel.error(util.format(error));
                 }
                 break;
             }
@@ -977,7 +983,7 @@ export class IQGeoVSCode {
             if (searchSummary) {
                 this._showSearchSummary(summary);
             } else {
-                console.log(summary);
+                this.outputChannel.info(util.format(summary));
             }
         }
     }
@@ -1025,10 +1031,7 @@ export class IQGeoVSCode {
             esClasses: summary.esClasses,
         };
 
-        if (!this.outputChannel) {
-            this.outputChannel = vscode.window.createOutputChannel('IQGeo VSCode');
-        }
-        this.outputChannel.appendLine(JSON.stringify(info, null, 2));
+        this.outputChannel.info(util.format(info));
         this.outputChannel.show(true);
     }
 
