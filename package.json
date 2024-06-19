@@ -450,7 +450,7 @@
     },
     "dependencies": {
         "findit": "^2.0.0",
-        "project-update": "github:IQGeo/utils-project-update#v0.3.0"
+        "project-update": "github:IQGeo/utils-project-update#v0.3.1"
     },
     "devDependencies": {
         "esbuild": "^0.21.3",
