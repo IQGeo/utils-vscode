@@ -158,6 +158,11 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.12
+
+-   Added new Pull command from utils-project-update.
+-   Improved logging to the IQGeo output channel.
+
 ### 1.0.11
 
 -   Move project update to separate package.
