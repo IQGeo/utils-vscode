@@ -72,6 +72,8 @@ Files are automatically rescanned when saved.
 
 -   Search in the workspace (repository) folder = **CMD + R** (**Ctrl + R**)
 
+-   Search core folder in Platform = **Shift + CMD + R** (**Shift + Ctrl + R**)
+
 -   Open Editor Search with current selection or word = **Ctrl + G** (**Alt + G**)
 
 ### Navigation
@@ -157,6 +159,11 @@ Shortcuts to control the layout of the workspace
     ```
 
 ## Release Notes
+
+### 1.0.13
+
+-   Added Type hierarchy support for Javascript.
+-   Added Search Core folder command.
 
 ### 1.0.12
 

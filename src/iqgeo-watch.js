@@ -56,10 +56,20 @@ export class IQGeoWatch {
                     : 'myw_product watch applications_dev --debug';
             }
 
-            this.jsTerminal = vscode.window.createTerminal({
-                name: 'JS Watch',
-                cwd: workspaceFolder,
-            });
+            for (const terminal of vscode.window.terminals) {
+                if (terminal.name === 'JS Watch' && terminal.exitStatus === undefined) {
+                    this.jsTerminal = terminal;
+                    break;
+                }
+            }
+
+            if (!this.jsTerminal) {
+                this.jsTerminal = vscode.window.createTerminal({
+                    name: 'JS Watch',
+                    cwd: workspaceFolder,
+                });
+            }
+
             this.jsTerminal.sendText(commandText, true);
         }
 
@@ -67,10 +77,19 @@ export class IQGeoWatch {
             !this._hasPythonTerminal() &&
             fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
         ) {
-            this.pythonTerminal = vscode.window.createTerminal({
-                name: 'Python Restart',
-                cwd: workspaceFolder,
-            });
+            for (const terminal of vscode.window.terminals) {
+                if (terminal.name === 'Python Restart' && terminal.exitStatus === undefined) {
+                    this.pythonTerminal = terminal;
+                    break;
+                }
+            }
+
+            if (!this.pythonTerminal) {
+                this.pythonTerminal = vscode.window.createTerminal({
+                    name: 'Python Restart',
+                    cwd: workspaceFolder,
+                });
+            }
         }
     }
 
