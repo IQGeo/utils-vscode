@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -42,6 +42,10 @@
             {
                 "command": "iqgeo.searchWorkspace",
                 "title": "IQGeo Search Workspace"
+            },
+            {
+                "command": "iqgeo.searchCore",
+                "title": "IQGeo Search Core"
             },
             {
                 "command": "iqgeo.searchEditor",
@@ -207,6 +211,14 @@
                 "key": "cmd+r",
                 "command": "-jupyter.refreshDataViewer",
                 "when": "isWorkspaceTrusted && jupyter.dataViewerActive"
+            },
+            {
+                "command": "iqgeo.searchCore",
+                "key": "shift+cmd+r"
+            },
+            {
+                "command": "iqgeo.searchCore",
+                "key": "shift+ctrl+r"
             },
             {
                 "command": "iqgeo.addJSDoc",
@@ -453,6 +465,7 @@
         "project-update": "github:IQGeo/utils-project-update#v0.5.0"
     },
     "devDependencies": {
+        "@vscode/vsce": "^2.31.1",
         "esbuild": "^0.21.3",
         "eslint": "^8.51.0"
     }

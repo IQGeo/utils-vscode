@@ -42,6 +42,10 @@ export class IQGeoSearch {
         );
 
         context.subscriptions.push(
+            vscode.commands.registerCommand('iqgeo.searchCore', () => this._searchCore())
+        );
+
+        context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.searchEditor', () => {
                 const rootFolder = this.iqgeoVSCode.rootFolders[0];
                 this._runSearch(rootFolder, true);
@@ -69,6 +73,13 @@ export class IQGeoSearch {
     _searchWorkspace() {
         const workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
         this._runSearch(workspaceFolder);
+    }
+
+    _searchCore() {
+        const core = path.join(this.iqgeoVSCode.rootFolders[0], 'core');
+        if (fs.existsSync(core)) {
+            this._runSearch(core);
+        }
     }
 
     _runSearch(folder = undefined, inEditor = false) {
@@ -107,8 +118,8 @@ export class IQGeoSearch {
                 newQuery = Utils.currentWord(doc, pos);
                 if (newQuery) {
                     if (
-                        this.iqgeoVSCode.getClassData(newQuery, false) ||
-                        this.iqgeoVSCode.getClassData(newQuery, true)
+                        this.iqgeoVSCode.getClassData(newQuery, 'javascript') ||
+                        this.iqgeoVSCode.getClassData(newQuery, 'python')
                     ) {
                         newQuery = `^${newQuery}$.`;
                     }

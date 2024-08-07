@@ -64,6 +64,8 @@ export class IQGeoVSCode {
 
         context.subscriptions.push(vscode.languages.registerDefinitionProvider(jsFile, this));
 
+        context.subscriptions.push(vscode.languages.registerTypeHierarchyProvider(jsFile, this));
+
         context.subscriptions.push(vscode.languages.registerWorkspaceSymbolProvider(this));
 
         this.iqgeoJSSearch = new IQGeoJSSearch(this);
@@ -266,6 +268,58 @@ export class IQGeoVSCode {
         }
 
         return this._findLocations(currentWord, doc, searchAll);
+    }
+
+    _getTypeHierarchyItem(className) {
+        const classData = this.getClassData(className);
+        if (!classData) return;
+
+        const detail = '';
+        const uri = vscode.Uri.file(classData.fileName);
+        const range = new vscode.Range(
+            classData.line,
+            classData.index - className.length,
+            classData.line,
+            classData.index
+        );
+
+        return new vscode.TypeHierarchyItem(
+            vscode.SymbolKind.Class,
+            className,
+            detail,
+            uri,
+            range,
+            range
+        );
+    }
+
+    prepareTypeHierarchy(doc, pos) {
+        const currentWord = Utils.currentWord(doc, pos);
+        if (!currentWord) return;
+
+        return this._getTypeHierarchyItem(currentWord);
+    }
+
+    provideTypeHierarchySubtypes(item) {
+        const subTypes = [];
+        for (const subClassName of this.getSubTypes(item.name)) {
+            const item = this._getTypeHierarchyItem(subClassName);
+            if (item) {
+                subTypes.push(item);
+            }
+        }
+        if (subTypes.length) return subTypes;
+    }
+
+    provideTypeHierarchySupertypes(item) {
+        const superTypes = [];
+        for (const parentClassName of this.getParents(item.name)) {
+            const item = this._getTypeHierarchyItem(parentClassName);
+            if (item) {
+                superTypes.push(item);
+            }
+        }
+        if (superTypes.length) return superTypes;
     }
 
     async provideDefinition(doc, pos) {
@@ -1070,6 +1124,20 @@ export class IQGeoVSCode {
     getParents(className, languageId = 'javascript') {
         const key = `${className}:${languageId}`;
         return this.parents.get(key) || [];
+    }
+
+    getSubTypes(className, languageId = 'javascript') {
+        const subTypes = [];
+        for (const key of this.classes.keys()) {
+            const [name, id] = key.split(':');
+            if (id === languageId) {
+                const parents = this.parents.get(key) || [];
+                if (parents.includes(className)) {
+                    subTypes.push(name);
+                }
+            }
+        }
+        return subTypes;
     }
 
     addExportedFunction(functionName, data) {
