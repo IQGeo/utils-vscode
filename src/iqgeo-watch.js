@@ -40,7 +40,9 @@ export class IQGeoWatch {
      * @return {undefined}
      */
     start() {
-        if (!vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart) return;
+        this.autoRestartEnabled = vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart;
+        this.runningInContainer = fs.existsSync(`/opt/iqgeo/platform/WebApps/myworldapp.wsgi`);
+        if (!this.autoRestartEnabled || !this.runningInContainer) return;
 
         this.workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
 
@@ -76,7 +78,7 @@ export class IQGeoWatch {
     }
 
     async _restartApp(doc) {
-        if (!vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart) return;
+        if (!this.autoRestartEnabled || !this.runningInContainer) return;
 
         const ext = path.extname(doc.fileName);
 
