@@ -153,6 +153,10 @@ Shortcuts to control the layout of the workspace
     ```json
     "iqgeo-utils-vscode.watchCommand": "myw_product watch applications_dev --debug"
     ```
+-   Command to reload Python when changes are detected. (Defaults to 'touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi')
+    ```json
+    "iqgeo-utils-vscode.pythonRestartCommand": "touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi"
+    ```
 -   Delay time in ms between a file change and restarting a browser debug session. (Defaults to 1500)
     ```json
     "iqgeo-utils-vscode.restartDelay": 1500
@@ -160,7 +164,11 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
-## 1.0.15
+### 1.0.16
+
+-   Added setting to allow configuration of Python restart command.
+
+### 1.0.15
 
 -   Added Type hierarchy support for Javascript.
 -   Added Search Core folder command.
