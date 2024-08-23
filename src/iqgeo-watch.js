@@ -40,56 +40,25 @@ export class IQGeoWatch {
      * @return {undefined}
      */
     start() {
-        if (!vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart) return;
+        this.autoRestartEnabled = vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart;
+        this.runningInContainer = fs.existsSync(`/opt/iqgeo/platform/WebApps/myworldapp.wsgi`);
+        if (!this.autoRestartEnabled || !this.runningInContainer) return;
 
-        const workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
+        this.workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
 
         if (!this._hasJSTerminal()) {
-            let commandText = vscode.workspace.getConfiguration('iqgeo-utils-vscode').watchCommand;
-
-            if (!commandText) {
-                const isPlatform = fs.existsSync(`${workspaceFolder}/WebApps/myworldapp`);
-                // 'export BUILD=applications,config,native,tests; cd /opt/iqgeo/platform/WebApps/myworldapp; npx webpack --config webpack.config.js --watch'
-                // `export BUILD=base,config,client,applications,native,tests; cd ${workspaceFolder}/WebApps/myworldapp; npx webpack --config webpack.config.js --watch`
-                commandText = isPlatform
-                    ? 'myw_product watch core_dev --debug'
-                    : 'myw_product watch applications_dev --debug';
-            }
-
-            for (const terminal of vscode.window.terminals) {
-                if (terminal.name === 'JS Watch' && terminal.exitStatus === undefined) {
-                    this.jsTerminal = terminal;
-                    break;
-                }
-            }
-
-            if (!this.jsTerminal) {
-                this.jsTerminal = vscode.window.createTerminal({
-                    name: 'JS Watch',
-                    cwd: workspaceFolder,
-                });
-            }
-
-            this.jsTerminal.sendText(commandText, true);
+            this.jsTerminal = this._getTerminal("JS Watch") ?? vscode.window.createTerminal({
+                name: 'JS Watch',
+                cwd: this.workspaceFolder,
+            });
         }
+        this.jsTerminal.sendText(this._getJSWatchCommand(), true);
 
-        if (
-            !this._hasPythonTerminal() &&
-            fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
-        ) {
-            for (const terminal of vscode.window.terminals) {
-                if (terminal.name === 'Python Restart' && terminal.exitStatus === undefined) {
-                    this.pythonTerminal = terminal;
-                    break;
-                }
-            }
-
-            if (!this.pythonTerminal) {
-                this.pythonTerminal = vscode.window.createTerminal({
-                    name: 'Python Restart',
-                    cwd: workspaceFolder,
-                });
-            }
+        if (!this._hasPythonTerminal()) {
+            this.pythonTerminal = this._getTerminal("Python Restart") ?? vscode.window.createTerminal({
+                name: 'Python Restart',
+                cwd: this.workspaceFolder,
+            });
         }
     }
 
@@ -109,7 +78,7 @@ export class IQGeoWatch {
     }
 
     async _restartApp(doc) {
-        if (!vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart) return;
+        if (!this.autoRestartEnabled || !this.runningInContainer) return;
 
         const ext = path.extname(doc.fileName);
 
@@ -124,13 +93,8 @@ export class IQGeoWatch {
                 await Utils.wait(restartDelay);
                 await vscode.commands.executeCommand('workbench.action.debug.restart');
             }
-        } else if (
-            ext === '.py' &&
-            this._hasPythonTerminal() &&
-            fs.existsSync('/opt/iqgeo/platform/WebApps/myworldapp.wsgi')
-        ) {
-            // 'apachectl -k restart'
-            this.pythonTerminal.sendText('touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi', true);
+        } else if (ext === '.py' && this._hasPythonTerminal()) {
+            this.pythonTerminal.sendText(this._getPythonRestartCommand(), true);
         }
     }
 
@@ -146,5 +110,31 @@ export class IQGeoWatch {
             this.pythonTerminal = undefined;
         }
         return !!this.pythonTerminal;
+    }
+
+    _getTerminal(terminalName) {
+        for (const terminal of vscode.window.terminals) {
+            if (terminal.name === terminalName && terminal.exitStatus === undefined) {
+                return terminal;
+            }
+        }
+    }
+
+    _getJSWatchCommand() {
+        let commandText = vscode.workspace.getConfiguration('iqgeo-utils-vscode').watchCommand;
+        if (!commandText) {
+            const isPlatform = fs.existsSync(`${this.workspaceFolder}/WebApps/myworldapp`);
+            // 'export BUILD=applications,config,native,tests; cd /opt/iqgeo/platform/WebApps/myworldapp; npx webpack --config webpack.config.js --watch'
+            // `export BUILD=base,config,client,applications,native,tests; cd ${workspaceFolder}/WebApps/myworldapp; npx webpack --config webpack.config.js --watch`
+            commandText = isPlatform
+                ? 'myw_product watch core_dev --debug'
+                : 'myw_product watch applications_dev --debug';
+        }
+        return commandText
+    }
+
+    _getPythonRestartCommand() {
+        const commandText = vscode.workspace.getConfiguration('iqgeo-utils-vscode').pythonRestartCommand;
+        return commandText || "touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi"
     }
 }

@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.15",
+    "version": "1.0.16",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -441,6 +441,11 @@
                 "iqgeo-utils-vscode.watchCommand": {
                     "type": "string",
                     "description": "Command to watch for changes in the workspace. Defaults to myw_product watch"
+                },
+                "iqgeo-utils-vscode.pythonRestartCommand": {
+                    "type": "string",
+                    "default": "touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi",
+                    "description": "Command to reload Python when changes are detected."
                 },
                 "iqgeo-utils-vscode.restartDelay": {
                     "type": "integer",
