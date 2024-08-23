@@ -40,25 +40,30 @@ export class IQGeoWatch {
      * @return {undefined}
      */
     start() {
-        this.autoRestartEnabled = vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart;
+        this.autoRestartEnabled =
+            vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart;
         this.runningInContainer = fs.existsSync(`/opt/iqgeo/platform/WebApps/myworldapp.wsgi`);
         if (!this.autoRestartEnabled || !this.runningInContainer) return;
 
         this.workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
 
         if (!this._hasJSTerminal()) {
-            this.jsTerminal = this._getTerminal("JS Watch") ?? vscode.window.createTerminal({
-                name: 'JS Watch',
-                cwd: this.workspaceFolder,
-            });
+            this.jsTerminal =
+                this._getTerminal('JS Watch') ??
+                vscode.window.createTerminal({
+                    name: 'JS Watch',
+                    cwd: this.workspaceFolder,
+                });
         }
         this.jsTerminal.sendText(this._getJSWatchCommand(), true);
 
         if (!this._hasPythonTerminal()) {
-            this.pythonTerminal = this._getTerminal("Python Restart") ?? vscode.window.createTerminal({
-                name: 'Python Restart',
-                cwd: this.workspaceFolder,
-            });
+            this.pythonTerminal =
+                this._getTerminal('Python Restart') ??
+                vscode.window.createTerminal({
+                    name: 'Python Restart',
+                    cwd: this.workspaceFolder,
+                });
         }
     }
 
@@ -84,6 +89,7 @@ export class IQGeoWatch {
 
         if (ext === '.js') {
             if (
+                !/\.(test|spec)\.js$/.test(doc.fileName) &&
                 this._hasJSTerminal() &&
                 vscode.debug.activeDebugSession &&
                 CLIENT_DEBUG_TYPES.includes(vscode.debug.activeDebugSession.type)
@@ -130,11 +136,12 @@ export class IQGeoWatch {
                 ? 'myw_product watch core_dev --debug'
                 : 'myw_product watch applications_dev --debug';
         }
-        return commandText
+        return commandText;
     }
 
     _getPythonRestartCommand() {
-        const commandText = vscode.workspace.getConfiguration('iqgeo-utils-vscode').pythonRestartCommand;
-        return commandText || "touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi"
+        const commandText =
+            vscode.workspace.getConfiguration('iqgeo-utils-vscode').pythonRestartCommand;
+        return commandText || 'touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi';
     }
 }
