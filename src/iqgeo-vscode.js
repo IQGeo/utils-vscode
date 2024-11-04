@@ -9,6 +9,7 @@ import { IQGeoPythonSearch } from './search/iqgeo-python-search';
 import { IQGeoLinter } from './iqgeo-linter';
 import { IQGeoJSDoc } from './iqgeo-jsdoc';
 import { IQGeoWatch } from './iqgeo-watch';
+import { IQGeoHistoryManager } from './iqgeo-history';
 import Utils from './utils';
 
 const PROTOTYPE_CALL_REG = /(\w+)\.prototype\.(\w+)\.(call|apply)\s*\(/;
@@ -37,6 +38,7 @@ export class IQGeoVSCode {
         this.linter = new IQGeoLinter(this);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
         this.watchManager = new IQGeoWatch(this, context);
+        this.historyManager = new IQGeoHistoryManager(this, context);
         this.outputChannel = outputChannel;
 
         this.symbols = {};
@@ -93,10 +95,12 @@ export class IQGeoVSCode {
 
     onActivation() {
         this.updateClasses();
+        this.historyManager.activate();
     }
 
     onDeactivation() {
         this.watchManager.stop();
+        this.historyManager.deactivate();
     }
 
     _initSymbolsConfig() {
@@ -388,7 +392,6 @@ export class IQGeoVSCode {
             sym._fileName = methodData.fileName;
             sym._icon = this._getIcon(kind);
             sym._order = this.symbolOrder.indexOf(kind);
-            sym._completionText = name;
 
             methodData.symbol = sym;
         }
@@ -411,7 +414,6 @@ export class IQGeoVSCode {
             sym = new vscode.SymbolInformation(name, kind, undefined, loc);
             sym._fileName = classData.fileName;
             sym._className = name;
-            sym._completionText = name;
             sym._icon = this._getIcon(kind);
             sym._order = this.symbolOrder.indexOf(kind);
 

@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.16",
+    "version": "1.0.17",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -70,6 +70,10 @@
             {
                 "command": "iqgeo.startWatch",
                 "title": "IQGeo Start Watch"
+            },
+            {
+                "command": "iqgeo.goTo",
+                "title": "IQGeo Open File"
             }
         ],
         "keybindings": [
@@ -427,6 +431,16 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Output search information to the console."
+                },
+                "iqgeo-utils-vscode.enableCodeLens": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable code lens actions for code navigation."
+                },
+                "iqgeo-utils-vscode.enableHover": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable hover search actions."
                 },
                 "iqgeo-utils-vscode.enableLayouts": {
                     "type": "boolean",
