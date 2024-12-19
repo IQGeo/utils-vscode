@@ -164,6 +164,10 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.17
+
+-   Improvements to Update and Pull commands from utils-project-update.
+
 ### 1.0.16
 
 -   Added setting to allow configuration of Python restart command.
