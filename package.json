@@ -477,7 +477,7 @@
     },
     "dependencies": {
         "findit": "^2.0.0",
-        "project-update": "github:IQGeo/utils-project-update#semver:^0.6.1"
+        "project-update": "github:IQGeo/utils-project-update#semver:^0.6.2"
     },
     "devDependencies": {
         "@vscode/vsce": "^2.31.1",
