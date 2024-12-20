@@ -19,7 +19,7 @@ export class IQGeoSearch {
         this._symbolSelector = undefined;
         this._lastQuery = '';
         this._viewColumn = undefined;
-        this._sideBarVisible = false;
+        this._sideBarVisible = true;
         this._fileIconConfig = undefined;
         this._fileIconCache = {};
 
@@ -104,8 +104,12 @@ export class IQGeoSearch {
         });
     }
 
-    _searchSymbols({ query, currentWord = false, sideBarVisible = false }) {
+    _searchSymbols({ query, currentWord = false, sideBarVisible = undefined }) {
         let newQuery = this._lastQuery;
+
+        if (sideBarVisible === undefined) {
+            sideBarVisible = this._sideBarVisible;
+        }
 
         if (query) {
             newQuery = query;
@@ -181,8 +185,15 @@ export class IQGeoSearch {
     _createSymbolSelector() {
         if (!this._symbolSelector) {
             this._symbolSelector = vscode.window.createQuickPick();
+            this._symbolSelector.title = 'Search Definitions';
             this._symbolSelector.placeholder =
-                'Search Definitions (<method> or <class> or <class>.<method> + supports ^ and $)';
+                '<method> or <class> or <class>.<method> + supports ^ and $';
+            this._symbolSelector.buttons = [
+                {
+                    iconPath: new vscode.ThemeIcon('close'),
+                    tooltip: 'Close',
+                },
+            ];
 
             // ENH: prevent re-sorting of items when available in api.
 
@@ -201,19 +212,17 @@ export class IQGeoSearch {
                     ) {
                         const selection = this._symbolSelector.activeItems;
                         if (selection.length > 0) {
-                            const col = this._previewColumn();
-                            this._goToSymbol(selection[0].symbol, {
-                                viewColumn: col,
-                                preview: true,
-                                preserveFocus: true,
-                            });
-                            this._previewSymbol = selection[0].symbol;
+                            this._showSymbolPreview(selection[0].symbol);
                         } else {
                             this._closeSymbolPreview();
                         }
                     }
                 }, 350)
             );
+
+            this._symbolSelector.onDidTriggerItemButton((e) => {
+                this._showSymbolPreview(e.item.symbol);
+            });
 
             this._symbolSelector.onDidAccept(() => {
                 this._symbolSelectorActive = false;
@@ -244,6 +253,10 @@ export class IQGeoSearch {
                 this._symbolSelectorActive = false;
                 this._closeSymbolPreview();
             });
+
+            this._symbolSelector.onDidTriggerButton(() => {
+                this._symbolSelector.hide();
+            });
         }
 
         this._symbolSelector.items = [];
@@ -253,13 +266,17 @@ export class IQGeoSearch {
         const { value } = this._symbolSelector;
 
         if (value && value.length > 1) {
-            const symbols = this.iqgeoVSCode.getSymbols(value.toLowerCase(), {
-                searchClasses: true,
-                searchAll: true,
-            });
-            const list = this._getSearchList(symbols);
-
-            this._symbolSelector.items = list;
+            try {
+                const symbols = this.iqgeoVSCode.getSymbols(value.toLowerCase(), {
+                    searchClasses: true,
+                    searchAll: true,
+                });
+                const list = this._getSearchList(symbols);
+                this._symbolSelector.items = list;
+            } catch (e) {
+                this.iqgeoVSCode.outputChannel.error(util.format(e));
+                this._symbolSelector.items = [];
+            }
         } else {
             this._symbolSelector.items = [];
         }
@@ -268,6 +285,8 @@ export class IQGeoSearch {
     _getSearchList(symbols) {
         const list = [];
         const symbolsLength = symbols.length;
+
+        const previewIcon = new vscode.ThemeIcon('open-preview');
 
         for (let index = 0; index < symbolsLength; index++) {
             const sym = symbols[index];
@@ -288,16 +307,34 @@ export class IQGeoSearch {
                 sym._partialPath = description;
             }
 
-            list.push({
+            const item = {
                 label,
                 description,
                 iconPath,
                 alwaysShow: true,
                 symbol: sym,
-            });
+                buttons: [
+                    {
+                        iconPath: previewIcon,
+                        tooltip: 'Show Preview',
+                    },
+                ],
+            };
+
+            list.push(item);
         }
 
         return list;
+    }
+
+    _showSymbolPreview(sym) {
+        const col = this._previewColumn();
+        this._goToSymbol(sym, {
+            viewColumn: col,
+            preview: true,
+            preserveFocus: true,
+        });
+        this._previewSymbol = sym;
     }
 
     _goToSymbol(sym, { viewColumn, preview, preserveFocus = false }) {

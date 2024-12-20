@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import Utils from './utils';
 
+const JS_TERMINAL_NAME = 'JS Watch';
+const PYTHON_TERMINAL_NAME = 'Python Restart';
+
 const CLIENT_DEBUG_TYPES = [
     'chrome',
     'pwa-chrome',
@@ -15,12 +18,27 @@ const CLIENT_DEBUG_TYPES = [
  * The IQGeoWatch class is responsible for starting the webpack watch and restarting the client debug session when a file is saved.
  */
 export class IQGeoWatch {
-    constructor(iqgeoVSCode, context) {
+    constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
 
-        context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.startWatch', () => this.start())
-        );
+        const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
+        this.autoRestartEnabled = config.enableAutoRestart;
+
+        vscode.workspace.onDidChangeConfiguration((changeEvent) => {
+            if (changeEvent.affectsConfiguration('iqgeo-utils-vscode')) {
+                const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
+
+                if (this.autoRestartEnabled !== config.autoRestartEnabled) {
+                    this.autoRestartEnabled = config.enableAutoRestart;
+
+                    if (config.enableAutoRestart) {
+                        this.activate();
+                    } else {
+                        this.deactivate();
+                    }
+                }
+            }
+        });
 
         vscode.workspace.onDidSaveTextDocument((doc) => {
             this._restartApp(doc);
@@ -39,9 +57,7 @@ export class IQGeoWatch {
      * Creates the watch terminal and starts the webpack build watch.
      * @return {undefined}
      */
-    start() {
-        this.autoRestartEnabled =
-            vscode.workspace.getConfiguration('iqgeo-utils-vscode').enableAutoRestart;
+    activate() {
         this.runningInContainer = fs.existsSync(`/opt/iqgeo/platform/WebApps/myworldapp.wsgi`);
         if (!this.autoRestartEnabled || !this.runningInContainer) return;
 
@@ -49,9 +65,9 @@ export class IQGeoWatch {
 
         if (!this._hasJSTerminal()) {
             this.jsTerminal =
-                this._getTerminal('JS Watch') ??
+                this._getTerminal(JS_TERMINAL_NAME) ??
                 vscode.window.createTerminal({
-                    name: 'JS Watch',
+                    name: JS_TERMINAL_NAME,
                     cwd: this.workspaceFolder,
                 });
         }
@@ -59,9 +75,9 @@ export class IQGeoWatch {
 
         if (!this._hasPythonTerminal()) {
             this.pythonTerminal =
-                this._getTerminal('Python Restart') ??
+                this._getTerminal(PYTHON_TERMINAL_NAME) ??
                 vscode.window.createTerminal({
-                    name: 'Python Restart',
+                    name: PYTHON_TERMINAL_NAME,
                     cwd: this.workspaceFolder,
                 });
         }
@@ -71,7 +87,7 @@ export class IQGeoWatch {
      * Closes the JS watch terminal and the Python terminal if they are running.
      * @return {undefined}
      */
-    stop() {
+    deactivate() {
         if (this._hasJSTerminal()) {
             this.jsTerminal.dispose();
             this.jsTerminal = undefined;

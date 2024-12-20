@@ -37,7 +37,7 @@ export class IQGeoVSCode {
         this.iqgeoSearch = new IQGeoSearch(this, context);
         this.linter = new IQGeoLinter(this);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
-        this.watchManager = new IQGeoWatch(this, context);
+        this.watchManager = new IQGeoWatch(this);
         this.historyManager = new IQGeoHistoryManager(this, context);
         this.outputChannel = outputChannel;
 
@@ -55,6 +55,10 @@ export class IQGeoVSCode {
             scheme: 'file',
             language: 'javascript',
         };
+        const pyFile = {
+            scheme: 'file',
+            language: 'python',
+        };
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.refreshSymbols', () => this.updateClasses())
@@ -65,6 +69,8 @@ export class IQGeoVSCode {
         );
 
         context.subscriptions.push(vscode.languages.registerDefinitionProvider(jsFile, this));
+
+        context.subscriptions.push(vscode.languages.registerDefinitionProvider(pyFile, this));
 
         context.subscriptions.push(vscode.languages.registerTypeHierarchyProvider(jsFile, this));
 
@@ -95,11 +101,10 @@ export class IQGeoVSCode {
 
     onActivation() {
         this.updateClasses();
-        this.historyManager.activate();
     }
 
     onDeactivation() {
-        this.watchManager.stop();
+        this.watchManager.deactivate();
         this.historyManager.deactivate();
     }
 
@@ -327,19 +332,39 @@ export class IQGeoVSCode {
     }
 
     async provideDefinition(doc, pos) {
-        const res = await this._findDefinition(doc, pos);
-        if (res) {
-            if (Array.isArray(res)) {
-                return res;
+        if (doc.languageId === 'javascript') {
+            const res = await this._findDefinition(doc, pos);
+            if (res) {
+                if (Array.isArray(res)) {
+                    return res;
+                }
+                if (res.uri) {
+                    return res;
+                }
             }
-            if (res.uri) {
-                return res;
+        } else if (doc.languageId === 'python') {
+            // Enhance standard behaviour by returning definitions outside of the workspace (i.e. provide platform definitions when looking at an application workspace)
+            const workspaceFolder = this.getWorkspaceFolder();
+            const currentWord = Utils.currentWord(doc, pos);
+            if (workspaceFolder && currentWord) {
+                const symbols = this.getSymbols(currentWord.toLowerCase(), {
+                    searchAll: true,
+                    searchClasses: true,
+                    languageIds: ['python'],
+                });
+                const locs = [];
+                for (const sym of symbols) {
+                    if (!sym._fileName.startsWith(workspaceFolder)) {
+                        locs.push(sym.location);
+                    }
+                }
+                return locs;
             }
         }
     }
 
     async goToDefinition() {
-        // Note: used for JS only
+        // Searches for JavaScript definitions only then defaults to the standard revealDefinition command (which subsequently uses provideDefinitions())
         const editor = vscode.window.activeTextEditor;
         let loc;
 
@@ -984,7 +1009,8 @@ export class IQGeoVSCode {
 
                     this.linter.checkOpenFiles();
 
-                    this.watchManager.start();
+                    this.watchManager.activate();
+                    this.historyManager.activate();
                 });
             }
         }

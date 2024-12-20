@@ -42,7 +42,6 @@ The extension provides the following features:
 8. File watch to restart Python or browser debug session when a Python or JavaScript file change respectively.<br>
    This functionality is enabled when **iqgeo-utils-vscode.enableAutoRestart** is set to true.<br>
    The extension uses one terminal to restart the Python environment and another to run a Javascript file watch. A browser debug session (if active) will be restarted when a JavaScript file is saved.<br>
-   The watch can be started using the command 'IQGeo Start Watch'.<br>
    The delay between saving a JavaScript file and restarting a debug session (to allow the watch build to complete) can be configured using the setting **iqgeo-utils-vscode.restartDelay** (defaults to 1500ms).
 
 <br>

@@ -295,6 +295,7 @@ export default {
     removeLiterals,
     removeComments,
     removeLineComment,
+    withinString,
     previousWordInString,
     previousWord,
     currentWordInString,

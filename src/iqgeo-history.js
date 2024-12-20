@@ -2,11 +2,11 @@ import vscode from 'vscode'; // eslint-disable-line
 import path from 'path';
 import Utils from './utils';
 
-const jsFile = {
+const JS_File = {
     scheme: 'file',
     language: 'javascript',
 };
-const pyFile = {
+const PY_File = {
     scheme: 'file',
     language: 'python',
 };
@@ -16,7 +16,7 @@ export class IQGeoHistoryManager {
     constructor(iqgeoVSCode, context) {
         this.iqgeoVSCode = iqgeoVSCode;
 
-        context.subscriptions.push(vscode.languages.registerHoverProvider(jsFile, this));
+        context.subscriptions.push(vscode.languages.registerHoverProvider(JS_File, this));
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.goTo', (args = {}) => this.goto(args))
@@ -59,10 +59,10 @@ export class IQGeoHistoryManager {
         this.lastPos = undefined;
 
         if (this.enableCodeLens) {
-            this.provider = vscode.languages.registerCodeLensProvider([jsFile, pyFile], this);
+            this.provider = vscode.languages.registerCodeLensProvider([JS_File, PY_File], this);
         }
 
-        this.timer = setInterval(() => this._updateNavigationHistory(), 1500);
+        this.timer = setInterval(() => this._updateNavigationHistory(), 1250);
     }
 
     deactivate() {
@@ -108,7 +108,7 @@ export class IQGeoHistoryManager {
 
             const name = sym._methodName ?? sym._className ?? fileName;
 
-            const index = this.navigationHistory.findIndex(
+            const index = this.navigationHistory.findLastIndex(
                 (item) => item.fileName === fileName && item.name === name
             );
 
@@ -150,7 +150,7 @@ export class IQGeoHistoryManager {
         if (this.enableCodeLens) {
             // Force update of code lenses
             this.provider.dispose();
-            this.provider = vscode.languages.registerCodeLensProvider([jsFile, pyFile], this);
+            this.provider = vscode.languages.registerCodeLensProvider([JS_File, PY_File], this);
         }
 
         // const end = new Date();
@@ -177,7 +177,13 @@ export class IQGeoHistoryManager {
 
         if (this.navigationIndex === undefined) return;
 
-        const pos = editor.selection.active;
+        let pos = editor.selection.active;
+        if (doc.isDirty) {
+            // Position the actions before the current function whilst editing to avoid to much movement of the actions.
+            const currentItem = this.navigationHistory[this.navigationIndex];
+            pos = new vscode.Position(currentItem.range[0], 0);
+        }
+
         const range = new vscode.Range(pos, pos);
 
         // console.log('provideCodeLenses', doc.fileName, pos.line);
@@ -257,7 +263,7 @@ export class IQGeoHistoryManager {
 
             if (!currentText.includes('\n')) {
                 let secondLine = false;
-                const inComment = this._posInComment(pos);
+                const inComment = this._posInComment(doc, pos);
                 const inCurrentWord = this._cursorInCurrentWord(doc, pos);
 
                 if (inSelection || !inComment) {
@@ -369,7 +375,7 @@ export class IQGeoHistoryManager {
         for (const [index, item] of items.entries()) {
             const title = titles[index];
             const gotoCommand = vscode.Uri.parse(
-                `command:iqgeo.goto?${encodeURIComponent(JSON.stringify([item]))}`
+                `command:iqgeo.goTo?${encodeURIComponent(JSON.stringify([item]))}`
             );
 
             historyStrings.push(`[${title}](${gotoCommand} "Go to ${title}")`);
@@ -460,15 +466,9 @@ export class IQGeoHistoryManager {
         }
     }
 
-    _posInComment(pos) {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) return false;
-
-        const doc = editor.document;
-        if (pos.line < 0 || pos.line > doc.lineCount - 1) return false;
-
+    _posInComment(doc, pos) {
         const lineText = doc.lineAt(pos.line).text;
-        const text = this._stringBeforeComment(lineText);
+        const text = this._stringBeforeComment(doc, lineText);
 
         return pos.character > text.length;
     }
@@ -515,14 +515,13 @@ export class IQGeoHistoryManager {
         return cursorPos.character >= wordStart && cursorPos.character <= wordEnd;
     }
 
-    _stringBeforeComment(text) {
-        let start = 0;
-        let index = text.indexOf('//', start);
+    _stringBeforeComment(doc, text) {
+        const testStr = doc.languageId === 'javascript' ? '//' : '#';
+        let index = text.indexOf(testStr);
 
         while (index > -1) {
             if (Utils.withinString(text, index)) {
-                start = index + 1;
-                index = text.indexOf('#', start);
+                index = text.indexOf(testStr, index + 1);
             } else {
                 return text.substring(0, index);
             }
