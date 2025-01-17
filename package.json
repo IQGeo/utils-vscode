@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.18",
+    "version": "1.0.19",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -431,12 +431,12 @@
                 "iqgeo-utils-vscode.enableCodeLens": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Enable code lens actions for code navigation."
+                    "description": "Enable code lens actions for search and navigation."
                 },
                 "iqgeo-utils-vscode.enableHover": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Enable hover search actions."
+                    "description": "Enable hover actions for search and navigation."
                 },
                 "iqgeo-utils-vscode.enableLayouts": {
                     "type": "boolean",

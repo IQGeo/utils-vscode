@@ -44,6 +44,8 @@ The extension provides the following features:
    The extension uses one terminal to restart the Python environment and another to run a Javascript file watch. A browser debug session (if active) will be restarted when a JavaScript file is saved.<br>
    The delay between saving a JavaScript file and restarting a debug session (to allow the watch build to complete) can be configured using the setting **iqgeo-utils-vscode.restartDelay** (defaults to 1500ms).
 
+9. (Experiemental) Hover and Code Lens actions for search and navigation. The actions can be enabled with the settings **iqgeo-utils-vscode.enableHover** and **iqgeo-utils-vscode.enableCodeLens**.
+
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
 The search path defaults to the workspace folder or /opt/iqgeo/platform/WebApps/myworldapp when inside a dev container.<br>
@@ -162,6 +164,12 @@ Shortcuts to control the layout of the workspace
     ```
 
 ## Release Notes
+
+### 1.0.19
+
+-   Added experiemental features for searching and code navigation from the editor tooltip and with code lens actions.
+-   Improvements to activating and deactivating the JS and Python file watch.
+-   Added support for multiple folders in the workspace.
 
 ### 1.0.18
 

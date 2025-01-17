@@ -16,7 +16,9 @@ export class IQGeoHistoryManager {
     constructor(iqgeoVSCode, context) {
         this.iqgeoVSCode = iqgeoVSCode;
 
-        context.subscriptions.push(vscode.languages.registerHoverProvider(JS_File, this));
+        context.subscriptions.push(
+            vscode.languages.registerHoverProvider([JS_File, PY_File], this)
+        );
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.goTo', (args = {}) => this.goto(args))

@@ -22,14 +22,14 @@ export class IQGeoWatch {
         this.iqgeoVSCode = iqgeoVSCode;
 
         const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
-        this.autoRestartEnabled = config.enableAutoRestart;
+        this.enableAutoRestart = config.enableAutoRestart;
 
         vscode.workspace.onDidChangeConfiguration((changeEvent) => {
             if (changeEvent.affectsConfiguration('iqgeo-utils-vscode')) {
                 const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
 
-                if (this.autoRestartEnabled !== config.autoRestartEnabled) {
-                    this.autoRestartEnabled = config.enableAutoRestart;
+                if (this.enableAutoRestart !== config.enableAutoRestart) {
+                    this.enableAutoRestart = config.enableAutoRestart;
 
                     if (config.enableAutoRestart) {
                         this.activate();
@@ -59,9 +59,9 @@ export class IQGeoWatch {
      */
     activate() {
         this.runningInContainer = fs.existsSync(`/opt/iqgeo/platform/WebApps/myworldapp.wsgi`);
-        if (!this.autoRestartEnabled || !this.runningInContainer) return;
+        if (!this.enableAutoRestart || !this.runningInContainer) return;
 
-        this.workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
+        this.workspaceFolder = this.iqgeoVSCode.getWorkspaceFolders()[0];
 
         if (!this._hasJSTerminal()) {
             this.jsTerminal =
@@ -99,7 +99,7 @@ export class IQGeoWatch {
     }
 
     async _restartApp(doc) {
-        if (!this.autoRestartEnabled || !this.runningInContainer) return;
+        if (!this.enableAutoRestart || !this.runningInContainer) return;
 
         const ext = path.extname(doc.fileName);
 

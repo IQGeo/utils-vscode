@@ -68,9 +68,9 @@ export class IQGeoVSCode {
             vscode.commands.registerCommand('iqgeo.goToDefinition', () => this.goToDefinition())
         );
 
-        context.subscriptions.push(vscode.languages.registerDefinitionProvider(jsFile, this));
-
-        context.subscriptions.push(vscode.languages.registerDefinitionProvider(pyFile, this));
+        context.subscriptions.push(
+            vscode.languages.registerDefinitionProvider([jsFile, pyFile], this)
+        );
 
         context.subscriptions.push(vscode.languages.registerTypeHierarchyProvider(jsFile, this));
 
@@ -222,8 +222,7 @@ export class IQGeoVSCode {
         }
     }
 
-    async _findDefinition(doc, pos, searchAll = false) {
-        // Note: used for JS only
+    async _findJSDefinition(doc, pos, searchAll = false) {
         const currentWord = Utils.currentWord(doc, pos);
         if (!currentWord) return;
 
@@ -277,6 +276,29 @@ export class IQGeoVSCode {
         }
 
         return this._findLocations(currentWord, doc, searchAll);
+    }
+
+    _findPythonDefinition(doc, pos, outsideWorkspace = false) {
+        const currentWord = Utils.currentWord(doc, pos);
+        if (currentWord) {
+            const currentLine = doc.lineAt(pos.line).text;
+            const index = currentLine.indexOf(currentWord, pos.character - currentWord.length);
+            const query =
+                currentLine[index + currentWord.length] === '('
+                    ? `^${currentWord.toLowerCase()}()`
+                    : `^${currentWord.toLowerCase()}$`;
+            const symbols = this.getSymbols(query, {
+                searchAll: true,
+                searchClasses: false,
+                languageIds: ['python'],
+            });
+            if (
+                symbols.length === 1 &&
+                (!outsideWorkspace || !this.isWorkspaceFile(symbols[0]._fileName))
+            ) {
+                return symbols[0].location;
+            }
+        }
     }
 
     _getTypeHierarchyItem(className) {
@@ -333,7 +355,7 @@ export class IQGeoVSCode {
 
     async provideDefinition(doc, pos) {
         if (doc.languageId === 'javascript') {
-            const res = await this._findDefinition(doc, pos);
+            const res = await this._findJSDefinition(doc, pos);
             if (res) {
                 if (Array.isArray(res)) {
                     return res;
@@ -343,36 +365,21 @@ export class IQGeoVSCode {
                 }
             }
         } else if (doc.languageId === 'python') {
-            // Enhance standard behaviour by returning definitions outside of the workspace (i.e. provide platform definitions when looking at an application workspace)
-            const workspaceFolder = this.getWorkspaceFolder();
-            const currentWord = Utils.currentWord(doc, pos);
-            if (workspaceFolder && currentWord) {
-                const symbols = this.getSymbols(currentWord.toLowerCase(), {
-                    searchAll: true,
-                    searchClasses: true,
-                    languageIds: ['python'],
-                });
-                const locs = [];
-                for (const sym of symbols) {
-                    if (!sym._fileName.startsWith(workspaceFolder)) {
-                        locs.push(sym.location);
-                    }
-                }
-                return locs;
-            }
+            // To improve the scope only search outside workspace for python definitions
+            return this._findPythonDefinition(doc, pos, true);
         }
     }
 
     async goToDefinition() {
-        // Searches for JavaScript definitions only then defaults to the standard revealDefinition command (which subsequently uses provideDefinitions())
+        // Searches for definitions then defaults to the standard revealDefinition command (which subsequently uses provideDefinitions())
         const editor = vscode.window.activeTextEditor;
         let loc;
 
         if (editor) {
             const doc = editor.document;
+            const pos = editor.selection.active;
             if (doc.languageId === 'javascript') {
-                const pos = editor.selection.active;
-                const res = await this._findDefinition(doc, pos, true);
+                const res = await this._findJSDefinition(doc, pos, true);
 
                 if (res) {
                     if (Array.isArray(res)) {
@@ -383,6 +390,8 @@ export class IQGeoVSCode {
                         loc = res;
                     }
                 }
+            } else if (doc.languageId === 'python') {
+                loc = this._findPythonDefinition(doc, pos);
             }
         }
 
@@ -1318,26 +1327,34 @@ export class IQGeoVSCode {
     }
 
     isWorkspaceFile(fileName) {
-        const workspaceFolder = this.getWorkspaceFolder();
-        return workspaceFolder && fileName.startsWith(workspaceFolder);
+        return this.getWorkspaceFolders().some((path) => fileName.startsWith(path));
     }
 
-    getWorkspaceFolder() {
-        if (!this.workspaceFolder && vscode.workspace.workspaceFolders) {
-            this.workspaceFolder = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    getWorkspaceFolders() {
+        let paths = this.workspaceFolders;
+        if (!paths) {
+            paths = [];
+            if (vscode.workspace.workspaceFolders) {
+                for (const folder of vscode.workspace.workspaceFolders) {
+                    paths.push(folder.uri.fsPath);
+                }
+                this.workspaceFolders = paths;
+            }
         }
-        return this.workspaceFolder;
+        return paths;
     }
 
     _getSearchPaths() {
         let paths = vscode.workspace.getConfiguration('iqgeo-utils-vscode').searchPaths || '';
-        if (!paths.length && vscode.workspace.workspaceFolders) {
-            paths = this.getWorkspaceFolder();
-            if (paths.startsWith('/opt/iqgeo/platform/WebApps/myworldapp')) {
-                paths = '/opt/iqgeo/platform/WebApps/myworldapp'; // in container so include platform source by default
+        if (paths.length) {
+            paths = paths.split(';');
+        } else {
+            const platformPath = '/opt/iqgeo/platform/WebApps/myworldapp';
+            paths = this.getWorkspaceFolders();
+            if (paths.some((path) => path.startsWith(platformPath))) {
+                paths = [platformPath]; // in container so include platform source by default
             }
         }
-        paths = paths.split(';');
         return paths;
     }
 

@@ -71,8 +71,12 @@ export class IQGeoSearch {
     }
 
     _searchWorkspace() {
-        const workspaceFolder = this.iqgeoVSCode.getWorkspaceFolder();
-        this._runSearch(workspaceFolder);
+        const workspaceFolders = this.iqgeoVSCode.getWorkspaceFolders();
+        if (workspaceFolders.length === 1) {
+            this._runSearch(workspaceFolders[0]);
+        } else {
+            this._searchRootFolder();
+        }
     }
 
     _searchCore() {
