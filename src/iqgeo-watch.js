@@ -111,7 +111,7 @@ export class IQGeoWatch {
                 CLIENT_DEBUG_TYPES.includes(vscode.debug.activeDebugSession.type)
             ) {
                 const restartDelay =
-                    vscode.workspace.getConfiguration('iqgeo-utils-vscode').restartDelay ?? 1500;
+                    vscode.workspace.getConfiguration('iqgeo-utils-vscode').restartDelay ?? 2000;
                 await Utils.wait(restartDelay);
                 await vscode.commands.executeCommand('workbench.action.debug.restart');
             }

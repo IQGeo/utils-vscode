@@ -459,7 +459,7 @@
                 },
                 "iqgeo-utils-vscode.restartDelay": {
                     "type": "integer",
-                    "default": 1500,
+                    "default": 2000,
                     "description": "Delay time in ms between a file change and restarting a browser debug session."
                 },
                 "iqgeo-utils-vscode.resizeTerminal": {
