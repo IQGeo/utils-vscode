@@ -165,11 +165,23 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
-### 1.0.19
+### 1.0.22
 
 -   Added experiemental features for searching and code navigation from the editor tooltip and with code lens actions.
 -   Improvements to activating and deactivating the JS and Python file watch.
 -   Added support for multiple folders in the workspace.
+
+### 1.0.21
+
+-   Improvements to Update and Pull commands from utils-project-update.
+
+### 1.0.20
+
+-   Improvements to Update and Pull commands from utils-project-update.
+
+### 1.0.19
+
+-   Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.18
 
