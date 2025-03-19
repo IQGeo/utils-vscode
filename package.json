@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.22",
+    "version": "1.0.23",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -68,8 +68,8 @@
                 "title": "IQGeo Pull and merge files from project-template"
             },
             {
-                "command": "iqgeo.startWatch",
-                "title": "IQGeo Start Watch"
+                "command": "iqgeo.goTo",
+                "title": "IQGeo Open File"
             }
         ],
         "keybindings": [
@@ -428,6 +428,16 @@
                     "default": false,
                     "description": "Output search information to the console."
                 },
+                "iqgeo-utils-vscode.enableCodeLens": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable code lens actions for search and navigation."
+                },
+                "iqgeo-utils-vscode.enableHover": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable hover actions for search and navigation."
+                },
                 "iqgeo-utils-vscode.enableLayouts": {
                     "type": "boolean",
                     "default": true,
@@ -449,7 +459,7 @@
                 },
                 "iqgeo-utils-vscode.restartDelay": {
                     "type": "integer",
-                    "default": 1500,
+                    "default": 2000,
                     "description": "Delay time in ms between a file change and restarting a browser debug session."
                 },
                 "iqgeo-utils-vscode.resizeTerminal": {
