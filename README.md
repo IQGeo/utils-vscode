@@ -165,6 +165,10 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.24
+
+-   Improvements to Update and Pull commands from utils-project-update.
+
 ### 1.0.23
 
 -   Added experiemental features for searching and code navigation from the editor tooltip and with code lens actions.
@@ -175,7 +179,6 @@ Shortcuts to control the layout of the workspace
 ### 1.0.22
 
 -   Improvements to Update and Pull commands from utils-project-update.
-
 
 ### 1.0.21
 
