@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.24",
+    "version": "1.0.25",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
@@ -477,7 +477,7 @@
     },
     "dependencies": {
         "findit": "^2.0.0",
-        "project-update": "github:IQGeo/utils-project-update#semver:^0.8.1"
+        "project-update": "github:IQGeo/utils-project-update#semver:^0.9.1"
     },
     "devDependencies": {
         "@vscode/vsce": "^2.31.1",
