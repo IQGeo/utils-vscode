@@ -127,6 +127,7 @@ export class IQGeoSearch {
                 if (newQuery) {
                     if (
                         this.iqgeoVSCode.getClassData(newQuery, 'javascript') ||
+                        this.iqgeoVSCode.getClassData(newQuery, 'typescript') ||
                         this.iqgeoVSCode.getClassData(newQuery, 'python')
                     ) {
                         newQuery = `^${newQuery}$.`;
@@ -281,6 +282,16 @@ export class IQGeoSearch {
                 this.iqgeoVSCode.outputChannel.error(util.format(e));
                 this._symbolSelector.items = [];
             }
+        } else if (value === '.' && vscode.window?.activeTextEditor?.document) {
+            try {
+                const doc = vscode.window.activeTextEditor.document;
+                const symbols = this.iqgeoVSCode.getSymbolsForFile(doc.fileName);
+                const list = this._getSearchList(symbols);
+                this._symbolSelector.items = list;
+            } catch (e) {
+                this.iqgeoVSCode.outputChannel.error(util.format(e));
+                this._symbolSelector.items = [];
+            }
         } else {
             this._symbolSelector.items = [];
         }
@@ -370,7 +381,7 @@ export class IQGeoSearch {
 
         if (editor) {
             const doc = editor.document;
-            if (doc.languageId === 'javascript' || doc.languageId === 'python') {
+            if (['javascript', 'typescript', 'python'].includes(doc.languageId)) {
                 const sortedSymbols = this.iqgeoVSCode.getSymbolsForFile(doc.fileName);
                 const line = editor.selection.active.line;
                 let symLine;
@@ -467,7 +478,7 @@ export class IQGeoSearch {
             iconDef = this._fileIconConfig.iconDefinitions[this._fileIconConfig.file];
         }
 
-        if (iconDef) {
+        if (iconDef?.iconPath) {
             iconPath = path.join(this._fileIconConfig._configPath, iconDef.iconPath);
             this._fileIconCache[key] = iconPath;
             return iconPath;

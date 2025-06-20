@@ -32,6 +32,10 @@
                 "title": "IQGeo Go To Definition"
             },
             {
+                "command": "iqgeo.checkSubclassSignatures",
+                "title": "IQGeo Check Subclass Signatures"
+            },
+            {
                 "command": "iqgeo.addJSDoc",
                 "title": "IQGeo Add JSDoc"
             },

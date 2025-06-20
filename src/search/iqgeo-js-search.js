@@ -1,38 +1,43 @@
 import vscode from 'vscode'; // eslint-disable-line
 import Utils from '../utils';
 
-const EXTEND_REG = /(\w+)\.extend\s*\(\s*['"](\w+)['"]/;
-const EXTEND_MULTI_LINE_REG = /(\w+)\.extend\s*\(\s*$/;
-const EXTEND_NO_STRING_REG = /(\w+)\s*=.*?(\w+)\.extend\s*\((\s*['"]([\w\s]+)['"]\s*,)?\s*{/;
-const EXTEND_NO_STRING_MULTI_LINE_REG = /(\w+)\s*=.*?(\w+)\.extend\s*\(\s*$/;
-const CLASS_REG = /^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)\s+(?:extends)?.*?(\w+)?\s*{/;
-const NAMESPACE_CLASS_REG = /(?:\w+)\s*=\s*class\s+(\w+)\s+(?:extends)?.*?(\w+)?\s*\)?\s*{/;
-const NAMESPACE_CLASS_MULTI_LINE_REG = /(?:\w+)\s*=\s*class\s+(\w+)\s+(?:extends)\s*\(?/;
-const RENAME_CLASS_REG = /^\s*export\s+const\s+(\w+)\s+=\s+\w+;/;
-const MIXIN_REG = /(\w+(Mixin)?)\s*=\s*{/;
-const EXPORT_MIXIN_REG = /^export\s+(?:(?:default|const)\s+)*(\w+(Mixin)?)\s*=\s*{/;
-const CLASS_ASSIGN_REG = /(?:^|\s+)Object\.assign\(.*?(\w+)\.prototype,\s*(\w+)\)/;
-const PROPERTY_REG = /^\s*#?(\w+):/;
-const SETTER_OR_GETTER_REG = /^\s*(?:(?:set|get)\s+)(\w+)\s*\(/;
-const FUNCTION_REG = /^\s*(?:async\s+|static\s+|#)?\*?(\w+)\s*\(([\w,\s={}[\]'"]|\.{3})*?\)\s*{/;
-const FUNCTION_MULTI_LINE_REG = /^\s*(async\s*|static\s*|#)?\*?\w+\s*\(\s*$/;
-const CONST_FUNCTION_REG = /^const\s+(\w+)\s*=\s*(?:async\s+)?function\*?\s*\(/;
-const CONST_ARROW_FUNCTION_REG = /^const\s+(\w+)\s*=[^;]*?\s+=>\s+/;
-const CONST_FUNCTION_MULTI_LINE_REG = /^const\s+(\w+)\s*=\s*\(/;
-const NO_CONST_FUNCTION_REG = /^(?:async\s+)?function\*?\s+(\w+)\s*\(/;
-const ARROW_FUNCTION_REG = /^\s*(?:async\s*)?(\w+).*?\s+=>\s+{/;
-const EXPORT_FUNCTION_REG = /^export\s+(?:(?:default|async)\s+)*function\*?\s+(\w+)\s*\(/;
-const EXPORT_ARROW_FUNCTION_REG = /^export\s+(?:(?:default|const)\s+)*(\w+)\s*=\s*[^;]*?\s+=>\s+{/;
-const EXPORT_ARROW_FUNCTION_MULTI_LINE_REG = /^export\s+((default|const)\s+)*(\w+)\s*=/;
-const EXPORT_FUNCTION_RESULT_REG = /^export\s+(?:(?:default|const)\s+)*(\w+)\s*=\s*.*?(\w+)\s*\(/;
-const INCLUDE_MIXIN_REG = /^\s*this.include\(\s*(\w+)\s*\)/;
-const LITERAL_BEFORE_QUOTE_REG = /^[^'"]*`/;
-const INC_BRACKETS = /(?<!%)[{]/g;
-const DEC_BRACKETS = /(?<!%)[}]/g;
-
 export class IQGeoJSSearch {
+    extendReg = /(\w+)\.extend\s*\(\s*['"](\w+)['"]/;
+    extendMultiLineReg = /(\w+)\.extend\s*\(\s*$/;
+    extendNoStringReg = /(\w+)\s*=.*?(\w+)\.extend\s*\((\s*['"]([\w\s]+)['"]\s*,)?\s*{/;
+    extendNoStringMultiLineReg = /(\w+)\s*=.*?(\w+)\.extend\s*\(\s*$/;
+    classReg = /^\s*(?:export\s+)?(?:default\s+)?class\s+(\w+)\s+(?:extends)?.*?(\w+)?\s*{/;
+    namespaceClassReg = /(?:\w+)\s*=\s*class\s+(\w+)\s+(?:extends)?.*?(\w+)?\s*\)?\s*{/;
+    namespaceClassMultiLineReg = /(?:\w+)\s*=\s*class\s+(\w+)\s+(?:extends)\s*\(?/;
+    renameClassReg = /^\s*export\s+const\s+(\w+)\s+=\s+\w+;/;
+    mixinReg = /(\w+(Mixin)?)\s*=\s*{/;
+    exportMixinReg = /^export\s+(?:(?:default|const)\s+)*(\w+(Mixin)?)\s*=\s*{/;
+    classAssignReg = /(?:^|\s+)Object\.assign\(.*?(\w+)\.prototype,\s*(\w+)\)/;
+    propertyReg = /^\s*(?:static\s+|readonly\s+|#)*(\w+)\??(:|\s*=)/;
+    setterOrGetterReg = /^\s*(?:readonly\s+|#)*(?:(?:set|get)\s+)(\w+)\s*\(/;
+    functionReg = /^\s*(?:async\s+|static\s+|#)*\*?(\w+)\s*\((.*?)\)\s*{/;
+    functionMultiLineReg = /^\s*(async\s*|static\s*|#)*\*?\w+\s*\(\s*$/;
+    constFunctionReg = /^\s*const\s+(\w+)\s*=\s*(?:async\s+)?function\*?\s*\(/;
+    constArrowFunctionReg = /^\s*const\s+(\w+)\s*=\s*(\(.*?\)|[^\s[{][^;.]*?)\s+=>\s+/;
+    constFunctionMultiLineReg = /^\s*const\s+(\w+)\s*=\s*/;
+    constArrowFunctionMultiLineReg = /^\s*const\s+(\w+)\s*=\s*(\(.*?|[^\s[{][^;.]*?$|$)/;
+    noConstFunctionReg = /^\s*(?:async\s+)?function\*?\s+(\w+)\s*\(/;
+    arrowFunctionReg = /^\s*(?:async\s+)?(\w+)\s*=\s*(\(.*?\)|[^;.]*?)\s+=>\s+/;
+    exportFunctionReg = /^export\s+(?:(?:default|async)\s+)*function\*?\s+(\w+)\s*\(/;
+    exportArrowFunctionReg =
+        /^export\s+(?:(?:default|async|const)\s+)*(\w+)\s*=\s*(\(.*?\)|[^;.]*?)\s+=>\s/;
+    exportArrowFunctionMultiLineReg = /^export\s+((default|async|const)\s+)*(\w+)\s*=/;
+    exportFunctionResultReg = /^export\s+(?:(?:default|const)\s+)*(\w+)\s*=\s*.*?(\w+)\s*\(/;
+    includeMixinReg = /^\s*this.include\(\s*(\w+)\s*\)/;
+    literalBeforeQuoteReg = /^[^'"]*`/;
+    regAssign =
+        /^\s*(?:(?:static\s+|public\s+|private\s+|protected\s+|readonly\s+|const\s+|let\s+|#)*\w+\s*=\s*)?\/(.*?)\/\w*;\s*$/;
+    incBracketsReg = /(?<!%)[{]/g;
+    decBracketsReg = /(?<!%)[}]/g;
+
     constructor(iqgeoVSCode) {
         this.iqgeoVSCode = iqgeoVSCode;
+        this.languageId = 'javascript';
     }
 
     updateClasses(fileName, fileLines = undefined) {
@@ -52,8 +57,8 @@ export class IQGeoJSSearch {
         let classData;
         let currentClass;
         let currentClassData;
-        let bracketMatches;
         let indent = 0;
+        let funcIndentStr;
         let inComment = false;
         let inLiteral = false;
 
@@ -66,10 +71,10 @@ export class IQGeoJSSearch {
                 index: classData.index,
                 workspace: inWorkspace,
                 methods: {},
-                languageId: 'javascript',
+                languageId: this.languageId,
             };
             this.iqgeoVSCode.addClassData(currentClass, currentClassData);
-            this.iqgeoVSCode.addParent(currentClass, classData.parent, 'javascript');
+            this.iqgeoVSCode.addParent(currentClass, classData.parent, this.languageId);
             classFound = true; // debug flag
         }
 
@@ -77,9 +82,11 @@ export class IQGeoJSSearch {
             const str = fileLines[line];
             let testStr = Utils.removeLineComment(str);
 
+            const prevIndent = indent;
+
             [testStr, inComment] = Utils.removeComments(testStr, inComment);
 
-            if (inLiteral || LITERAL_BEFORE_QUOTE_REG.test(testStr)) {
+            if (inLiteral || this.literalBeforeQuoteReg.test(testStr)) {
                 [testStr, inLiteral] = Utils.removeLiterals(testStr, inLiteral);
                 testStr = Utils.removeStrings(testStr);
             } else {
@@ -88,14 +95,20 @@ export class IQGeoJSSearch {
             }
 
             if (indent === 0) {
-                const functionName = this._findExportFunctionDef(str, line, fileLines);
+                let functionName = this._findExportFunctionDef(str, line, fileLines);
+                let exported = true;
+                if (!functionName) {
+                    exported = false;
+                    functionName = this._findPrivateFunctionDef(str, line, fileLines);
+                }
                 if (functionName) {
-                    this.iqgeoVSCode.addExportedFunction(functionName, {
+                    this.iqgeoVSCode.addFunction(functionName, {
                         fileName,
                         line,
                         index: str.indexOf(functionName) + functionName.length,
                         workspace: inWorkspace,
-                        languageId: 'javascript',
+                        languageId: this.languageId,
+                        exported,
                     });
                     symbolCount++; // debug counter
                 } else {
@@ -109,31 +122,38 @@ export class IQGeoJSSearch {
                             es: classData.es,
                             workspace: inWorkspace,
                             methods: {},
-                            languageId: 'javascript',
+                            languageId: this.languageId,
                         };
                         this.iqgeoVSCode.addClassData(currentClass, currentClassData);
-                        this.iqgeoVSCode.addParent(currentClass, classData.parent, 'javascript');
+                        this.iqgeoVSCode.addParent(currentClass, classData.parent, this.languageId);
                         if (classData.es) {
                             this.iqgeoVSCode.esClasses.push(currentClass);
                         }
+                        funcIndentStr = undefined;
                         classFound = true; // debug flag
                     }
                 }
             } else if (currentClass && indent === 1 && !inComment) {
-                const functionName = this._findFunctionDef(str, line, fileLines);
+                const [functionName, paramString] = this._findFunctionDef(str, line, fileLines);
                 if (functionName) {
                     const name = `${functionName}()`;
                     currentClassData.methods[name] = {
                         name,
+                        className: currentClass,
                         fileName,
                         line,
                         index: str.indexOf(functionName) + functionName.length,
                         kind: vscode.SymbolKind.Method,
+                        paramString,
                     };
+                    funcIndentStr = fileLines[line].match(/^\s*/)[0];
                     symbolCount++; // debug counter
                 } else {
                     const propName = this._findPropertyDef(str);
-                    if (propName) {
+                    if (
+                        propName &&
+                        (!funcIndentStr || funcIndentStr === fileLines[line].match(/^\s*/)[0])
+                    ) {
                         currentClassData.methods[propName] = {
                             name: propName,
                             fileName,
@@ -145,22 +165,28 @@ export class IQGeoJSSearch {
                     }
                 }
             } else if (currentClass) {
-                const mixinMatch = testStr.match(INCLUDE_MIXIN_REG);
+                const mixinMatch = testStr.match(this.includeMixinReg);
                 if (mixinMatch) {
                     const mixinName = mixinMatch[1];
-                    this.iqgeoVSCode.addParent(currentClass, mixinName, 'javascript');
+                    this.iqgeoVSCode.addParent(currentClass, mixinName, this.languageId);
+                }
+            } else if (indent < 2 && !inComment) {
+                const functionName = this._findPrivateFunctionDef(str, line, fileLines);
+                if (functionName) {
+                    this.iqgeoVSCode.addFunction(functionName, {
+                        fileName,
+                        line,
+                        index: str.indexOf(functionName) + functionName.length,
+                        workspace: inWorkspace,
+                        languageId: this.languageId,
+                        exported: false,
+                    });
+                    symbolCount++; // debug counter
                 }
             }
 
-            const prevIndent = indent;
-            bracketMatches = testStr.match(INC_BRACKETS);
-            if (bracketMatches) {
-                indent += bracketMatches.length;
-            }
-            bracketMatches = testStr.match(DEC_BRACKETS);
-            if (bracketMatches) {
-                indent -= bracketMatches.length;
-            }
+            indent = this._getCurrentIndent(testStr, prevIndent);
+
             if (indent !== prevIndent && indent === 0) {
                 currentClass = undefined;
             }
@@ -175,6 +201,41 @@ export class IQGeoJSSearch {
                 console.log('No symbols found in', fileName);
             }
         }
+    }
+
+    _getCurrentIndent(testStr, prevIndent) {
+        let indent = prevIndent;
+        const regMatch = testStr.match(this.regAssign);
+
+        if (regMatch) {
+            const regMin = testStr.indexOf(regMatch[1]);
+            const regMax = regMin + regMatch[1].length;
+
+            let bracketMatch;
+            while ((bracketMatch = this.incBracketsReg.exec(testStr))) {
+                const i = bracketMatch.index;
+                if (i < regMin && i >= regMax) {
+                    indent++;
+                }
+            }
+            while ((bracketMatch = this.decBracketsReg.exec(testStr))) {
+                const i = bracketMatch.index;
+                if (i < regMin && i >= regMax) {
+                    indent--;
+                }
+            }
+        } else {
+            let bracketMatches = testStr.match(this.incBracketsReg);
+            if (bracketMatches) {
+                indent += bracketMatches.length;
+            }
+            bracketMatches = testStr.match(this.decBracketsReg);
+            if (bracketMatches) {
+                indent -= bracketMatches.length;
+            }
+        }
+
+        return indent;
     }
 
     getCurrentClass(doc, currentLine) {
@@ -195,7 +256,7 @@ export class IQGeoJSSearch {
     }
 
     _findClassDef(str, line, fileLines) {
-        let match = str.match(EXTEND_NO_STRING_REG);
+        let match = str.match(this.extendNoStringReg);
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
             return {
@@ -206,7 +267,7 @@ export class IQGeoJSSearch {
             };
         }
 
-        match = str.match(EXTEND_REG);
+        match = str.match(this.extendReg);
         if (match) {
             const index = str.indexOf(match[2]) + match[2].length;
             return {
@@ -217,7 +278,7 @@ export class IQGeoJSSearch {
             };
         }
 
-        match = str.match(CLASS_REG);
+        match = str.match(this.classReg);
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
             const parent = match[2];
@@ -230,7 +291,7 @@ export class IQGeoJSSearch {
             };
         }
 
-        match = str.match(RENAME_CLASS_REG);
+        match = str.match(this.renameClassReg);
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
             return {
@@ -241,7 +302,7 @@ export class IQGeoJSSearch {
             };
         }
 
-        match = str.match(NAMESPACE_CLASS_REG);
+        match = str.match(this.namespaceClassReg);
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
             const parent = match[2];
@@ -258,8 +319,8 @@ export class IQGeoJSSearch {
             str,
             line,
             fileLines,
-            NAMESPACE_CLASS_MULTI_LINE_REG,
-            NAMESPACE_CLASS_REG
+            this.namespaceClassMultiLineReg,
+            this.namespaceClassReg
         );
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
@@ -272,19 +333,19 @@ export class IQGeoJSSearch {
             };
         }
 
-        match = str.match(EXPORT_MIXIN_REG);
+        match = str.match(this.exportMixinReg);
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
             return { class: match[1], line, index };
         }
 
-        match = str.match(MIXIN_REG);
+        match = str.match(this.mixinReg);
         if (match && this._exportExists(match[1], line, fileLines)) {
             const index = str.indexOf(match[1]) + match[1].length;
             return { class: match[1], line, index };
         }
 
-        match = Utils.matchMultiLine(str, line, fileLines, EXTEND_MULTI_LINE_REG, EXTEND_REG);
+        match = Utils.matchMultiLine(str, line, fileLines, this.extendMultiLineReg, this.extendReg);
         if (match) {
             const index = str.indexOf(match[2]) + match[2].length;
             return {
@@ -299,8 +360,8 @@ export class IQGeoJSSearch {
             str,
             line,
             fileLines,
-            EXTEND_NO_STRING_MULTI_LINE_REG,
-            EXTEND_NO_STRING_REG
+            this.extendNoStringMultiLineReg,
+            this.extendNoStringReg
         );
         if (match) {
             const index = str.indexOf(match[1]) + match[1].length;
@@ -317,7 +378,7 @@ export class IQGeoJSSearch {
         const len = fileLines.length;
         for (let line = len - 1; line > -1; line--) {
             const str = fileLines[line];
-            const match = str.match(CLASS_ASSIGN_REG);
+            const match = str.match(this.classAssignReg);
             if (match) {
                 const className = match[2];
                 const index = str.indexOf(className) + className.length + 1;
@@ -335,76 +396,134 @@ export class IQGeoJSSearch {
     }
 
     _findFunctionDef(str, line, fileLines) {
-        let match = str.match(FUNCTION_REG);
+        let match = str.match(this.functionReg);
+        if (match) {
+            return [match[1], match[2]];
+        }
+
+        match = str.match(this.arrowFunctionReg);
+        if (match) {
+            return [match[1], match[2]];
+        }
+
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            this.functionMultiLineReg,
+            this.functionReg
+        );
+        if (match) {
+            return [match[1], match[2]];
+        }
+
+        return [];
+    }
+
+    _findExportFunctionDef(str, line, fileLines) {
+        let match = str.match(this.exportFunctionReg);
+        if (match) {
+            return match[1];
+        }
+        match = str.match(this.exportArrowFunctionReg);
+        if (match) {
+            return match[1];
+        }
+        match = str.match(this.constFunctionReg);
+        if (match && this._exportExists(match[1], line, fileLines)) {
+            return match[1];
+        }
+        match = str.match(this.constArrowFunctionReg);
+        if (match && this._exportExists(match[1], line, fileLines)) {
+            return match[1];
+        }
+        match = str.match(this.noConstFunctionReg);
+        if (match && this._exportExists(match[1], line, fileLines)) {
+            return match[1];
+        }
+        match = str.match(this.exportFunctionResultReg);
         if (match) {
             return match[1];
         }
 
-        match = str.match(ARROW_FUNCTION_REG);
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            this.exportArrowFunctionMultiLineReg,
+            this.exportArrowFunctionReg
+        );
         if (match) {
             return match[1];
         }
 
-        match = Utils.matchMultiLine(str, line, fileLines, FUNCTION_MULTI_LINE_REG, FUNCTION_REG);
-        if (match) {
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            this.constFunctionMultiLineReg,
+            this.constFunctionReg
+        );
+        if (match && this._exportExists(match[1], line, fileLines)) {
+            return match[1];
+        }
+
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            this.constArrowFunctionMultiLineReg,
+            this.constArrowFunctionReg
+        );
+        if (match && this._exportExists(match[1], line, fileLines)) {
             return match[1];
         }
     }
 
-    _findExportFunctionDef(str, line, fileLines) {
-        let match = str.match(EXPORT_FUNCTION_REG);
+    _findPrivateFunctionDef(str, line, fileLines) {
+        let match = str.match(this.constFunctionReg);
         if (match) {
             return match[1];
         }
-        match = str.match(EXPORT_ARROW_FUNCTION_REG);
+        match = str.match(this.constArrowFunctionReg);
         if (match) {
             return match[1];
         }
-        match = str.match(CONST_FUNCTION_REG);
-        if (match && this._exportExists(match[1], line, fileLines)) {
-            return match[1];
-        }
-        match = str.match(CONST_ARROW_FUNCTION_REG);
-        if (match && this._exportExists(match[1], line, fileLines)) {
-            return match[1];
-        }
-        match = str.match(NO_CONST_FUNCTION_REG);
-        if (match && this._exportExists(match[1], line, fileLines)) {
-            return match[1];
-        }
-        match = str.match(EXPORT_FUNCTION_RESULT_REG);
+        match = str.match(this.noConstFunctionReg);
         if (match) {
             return match[1];
         }
+
         match = Utils.matchMultiLine(
             str,
             line,
             fileLines,
-            EXPORT_ARROW_FUNCTION_MULTI_LINE_REG,
-            EXPORT_ARROW_FUNCTION_REG
+            this.constFunctionMultiLineReg,
+            this.constFunctionReg
         );
         if (match) {
             return match[1];
         }
+
         match = Utils.matchMultiLine(
             str,
             line,
             fileLines,
-            CONST_FUNCTION_MULTI_LINE_REG,
-            CONST_ARROW_FUNCTION_REG
+            this.constArrowFunctionMultiLineReg,
+            this.constArrowFunctionReg
         );
-        if (match && this._exportExists(match[1], line, fileLines)) {
+        if (match) {
             return match[1];
         }
     }
 
     _findPropertyDef(str) {
-        let match = str.match(PROPERTY_REG);
+        let match = str.match(this.propertyReg);
         if (match) {
             return match[1];
         }
 
-        match = str.match(SETTER_OR_GETTER_REG);
+        match = str.match(this.setterOrGetterReg);
         if (match) {
             return match[1];
         }

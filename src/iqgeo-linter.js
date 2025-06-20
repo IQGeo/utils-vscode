@@ -247,8 +247,12 @@ export class IQGeoLinter {
             }
         }
 
-        for (const methodData of this.iqgeoVSCode.allExportedFunctions()) {
-            if (methodData.fileName === fileName && !['_', '#'].includes(methodData.name[0])) {
+        for (const methodData of this.iqgeoVSCode.allFunctions()) {
+            if (
+                methodData.fileName === fileName &&
+                methodData.exported &&
+                !['_', '#'].includes(methodData.name[0])
+            ) {
                 publicMethods.push(methodData);
             }
         }
@@ -263,6 +267,12 @@ export class IQGeoLinter {
                 if (!/^\/?\*/.test(str)) {
                     const name = methodData.name.split('()')[0];
                     const index = fileLines[methodLine].indexOf(name);
+                    if (index === -1) {
+                        this.iqgeoVSCode.outputChannel.error(
+                            `Method '${methodData.name}' not found on line ${methodLine} in file ${fileName}.`
+                        );
+                        continue;
+                    }
                     const range = new vscode.Range(
                         methodLine,
                         index,

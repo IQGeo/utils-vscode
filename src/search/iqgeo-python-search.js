@@ -2,9 +2,9 @@ import vscode from 'vscode'; // eslint-disable-line
 import Utils from '../utils';
 
 const PYTHON_CLASS_REG = /^\s*class\s+(\w+)(?:\(((?:[\w=]+,?\s*)*?)\))?:/;
-const PYTHON_DEF_REG = /^\s+def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
+const PYTHON_DEF_REG = /^\s+def\s+(\w+)\((.*?)\)(\s+->.*?)?:/;
 const PYTHON_DEF_MULTI_LINE_REG = /^\s+def\s+(\w+)\(\s*$/;
-const EXPORT_PYTHON_DEF_REG = /^def\s+(\w+)\(.*?\)(\s+->.*?)?:/;
+const EXPORT_PYTHON_DEF_REG = /^def\s+(\w+)\((.*?)\)(\s+->.*?)?:/;
 const EXPORT_PYTHON_DEF_MULTI_LINE_REG = /^def\s+(\w+)\(\s*$/;
 
 export class IQGeoPythonSearch {
@@ -55,16 +55,18 @@ export class IQGeoPythonSearch {
                 classFound = true; // debug flag
             } else {
                 if (currentClass) {
-                    const methodName = this._findMethodDef(str, line, fileLines);
+                    const [methodName, paramString] = this._findMethodDef(str, line, fileLines);
                     if (methodName) {
                         const index = str.indexOf(methodName) + methodName.length;
                         const name = `${methodName}()`;
                         currentClassData.methods[name] = {
                             name,
+                            className: currentClass,
                             fileName,
                             line,
                             index,
                             kind: vscode.SymbolKind.Method,
+                            paramString,
                         };
                         symbolCount++; // debug counter
                         continue;
@@ -73,12 +75,13 @@ export class IQGeoPythonSearch {
                 const functionName = this._findExportMethodDef(str, line, fileLines);
                 if (functionName) {
                     const index = str.indexOf(functionName) + functionName.length;
-                    this.iqgeoVSCode.addExportedFunction(functionName, {
+                    this.iqgeoVSCode.addFunction(functionName, {
                         fileName,
                         line,
                         index,
                         workspace: inWorkspace,
                         languageId: 'python',
+                        exported: true,
                     });
                     symbolCount++; // debug counter
                 }
@@ -99,7 +102,7 @@ export class IQGeoPythonSearch {
     _findMethodDef(str, line, fileLines) {
         let match = str.match(PYTHON_DEF_REG);
         if (match) {
-            return match[1];
+            return [match[1], match[2]];
         }
 
         match = Utils.matchMultiLine(
@@ -110,8 +113,10 @@ export class IQGeoPythonSearch {
             PYTHON_DEF_REG
         );
         if (match) {
-            return match[1];
+            return [match[1], match[2]];
         }
+
+        return [];
     }
 
     _findExportMethodDef(str, line, fileLines) {
