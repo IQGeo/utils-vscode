@@ -36,7 +36,7 @@ export class IQGeoVSCode {
      */
     constructor(context, outputChannel) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
-        this.linter = new IQGeoLinter(this);
+        this.linter = new IQGeoLinter(this, context);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
         this.watchManager = new IQGeoWatch(this);
         this.historyManager = new IQGeoHistoryManager(this, context);
@@ -67,12 +67,6 @@ export class IQGeoVSCode {
 
         context.subscriptions.push(
             vscode.commands.registerCommand('iqgeo.goToDefinition', () => this.goToDefinition())
-        );
-
-        context.subscriptions.push(
-            vscode.commands.registerCommand('iqgeo.checkSubclassSignatures', () =>
-                this.checkSubclassSignatures()
-            )
         );
 
         context.subscriptions.push(
@@ -1219,153 +1213,6 @@ export class IQGeoVSCode {
             allData.push(...dataArray);
         }
         return allData;
-    }
-
-    checkSubclassSignatures() {
-        const gatherParams = ['...', '*args', '**kwargs'];
-        let classCount = 0;
-        let warningCount = 0;
-
-        for (let languageId of ['javascript', 'python']) {
-            this.outputChannel.info(`Checking subclass signatures for ${languageId}...`);
-
-            for (const key of this.classes.keys()) {
-                const [className, id] = key.split(':');
-                if (id !== languageId) continue;
-
-                classCount++;
-
-                const classData = this.getClassData(className, languageId);
-                for (const methodData of Object.values(classData.methods)) {
-                    if (!methodData.paramString) continue;
-                    if (languageId === 'python' && methodData.name === '__init__()') continue;
-
-                    const methParamTypes = this._getParamTypes(methodData.paramString);
-                    const nPosParams = this._numPositionalParams(methParamTypes);
-
-                    for (const parentMethod of this._getSuperMethodData(
-                        className,
-                        languageId,
-                        methodData.name
-                    )) {
-                        const parentParamTypes = this._getParamTypes(parentMethod.paramString);
-                        const nParentPosParams = this._numPositionalParams(parentParamTypes);
-
-                        // Subclasses should have the same number of positional parameters
-                        if (
-                            nPosParams > nParentPosParams ||
-                            (nPosParams < nParentPosParams &&
-                                !gatherParams.some((p) => methParamTypes.includes(p)))
-                        ) {
-                            this.outputChannel.info(
-                                `${className}.${
-                                    methodData.name
-                                } does not match signature of base method in parent ${
-                                    parentMethod.className
-                                }.\n  (${methodData.paramString
-                                    .trim()
-                                    .replace(/\s\s+/g, ' ')}) vs (${parentMethod.paramString
-                                    .trim()
-                                    .replace(/\s\s+/g, ' ')})`
-                            );
-                            warningCount++;
-                        }
-                    }
-                }
-            }
-        }
-
-        this.outputChannel.info(`${classCount} classes checked.`);
-
-        if (warningCount > 0) {
-            this.outputChannel.info(`Found ${warningCount} subclass signature warnings.`);
-        }
-    }
-
-    _getSuperMethodData(className, languageId, methodName, result = []) {
-        const parents = this.getParents(className, languageId);
-
-        for (const parentName of parents) {
-            const parentData = this.getClassData(parentName, languageId);
-            if (parentData) {
-                const parentMethodData = parentData.methods[methodName];
-                if (parentMethodData && parentMethodData.kind === vscode.SymbolKind.Method) {
-                    result.push(parentMethodData);
-                } else {
-                    this._getSuperMethodData(parentName, languageId, methodName, result);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    _getParamTypes(str) {
-        const types = [];
-        if (!str || str.trim().length === 0) {
-            return types;
-        }
-
-        const reg = /(?:\w+\s*:\s*"?([\w|.\s]+)|(\w+)\s*=|(\w+))/;
-        const parts = str.split(',');
-        const paramStrings = [];
-        let testStr = '';
-
-        for (let i = 0; i < parts.length; i++) {
-            testStr += parts[i];
-            const count =
-                (testStr.match(/[\[{]/g) || []).length - (testStr.match(/[\]}]/g) || []).length;
-            if (count === 0) {
-                testStr = testStr.trim();
-                if (testStr.length > 0) {
-                    paramStrings.push(testStr);
-                    testStr = '';
-                }
-            } else {
-                testStr += ',';
-            }
-        }
-
-        for (const paramStr of paramStrings) {
-            if (paramStr.startsWith('...')) {
-                types.push('...');
-            } else if (paramStr.startsWith('{')) {
-                types.push('{}');
-            } else if (paramStr.startsWith('[')) {
-                types.push('[]');
-            } else if (paramStr.startsWith('**')) {
-                types.push('**kwargs');
-            } else if (paramStr === '*') {
-                types.push('*');
-            } else if (paramStr.startsWith('*')) {
-                types.push('*args');
-            } else {
-                const match = paramStr.match(reg);
-                if (match && match[1]) {
-                    types.push(match[1].trim());
-                } else if (match && match[2]) {
-                    types.push('param_default');
-                } else {
-                    types.push('param');
-                }
-            }
-        }
-
-        // Debug
-        // console.log(str, ' >> ', types.join(', '));
-
-        return types;
-    }
-
-    _numPositionalParams(types) {
-        let count = 0;
-        for (const type of types) {
-            if (type === '...' || type === '*' || type === '*args' || type === '*kwargs') {
-                break;
-            }
-            count++;
-        }
-        return count;
     }
 
     clearDataForFile(fileName) {
