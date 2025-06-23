@@ -168,6 +168,10 @@ Shortcuts to control the layout of the workspace
 ### 1.0.26
 
 -   Improvements to Update and Pull commands from utils-project-update.
+-   Added command to check subclass method signatures.
+-   Added signature check to file linting for Javascript and Python.
+-   Added search support for Typescript.
+-   Improved searching for functions in React components.
 
 ### 1.0.25
 

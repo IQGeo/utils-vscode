@@ -5,7 +5,7 @@
     "publisher": "IQGeo",
     "license": "MIT",
     "repository": "https://github.com/IQGeo/utils-vscode",
-    "version": "1.0.25",
+    "version": "1.0.26",
     "icon": "images/iqgeo_logo.png",
     "engines": {
         "vscode": "^1.81.0"
