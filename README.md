@@ -9,7 +9,7 @@ IQGeo development extension to support code navigation and additional linting in
 The extension provides the following features:
 
 1. An alternative definition search dialog that shows a preview of the highlighted result in an editor.<br>
-   The search supports JavaScript and Python and accepts these query formats:
+   The search supports JavaScript, Typescript and Python and accepts these query formats:
     - \<method name\>
     - \<class name\>
     - \<class name\>.\<method name\>
@@ -44,7 +44,9 @@ The extension provides the following features:
    The extension uses one terminal to restart the Python environment and another to run a Javascript file watch. A browser debug session (if active) will be restarted when a JavaScript file is saved.<br>
    The delay between saving a JavaScript file and restarting a debug session (to allow the watch build to complete) can be configured using the setting **iqgeo-utils-vscode.restartDelay** (defaults to 1500ms).
 
-9. (Experiemental) Hover and Code Lens actions for search and navigation. The actions can be enabled with the settings **iqgeo-utils-vscode.enableHover** and **iqgeo-utils-vscode.enableCodeLens**.
+9. Command Check Subclass Signatures can list Javascript and Python subclass methods that do not match the signature of the parent method.
+
+10. (Experiemental) Hover and Code Lens actions for search and navigation. The actions can be enabled with the settings **iqgeo-utils-vscode.enableHover** and **iqgeo-utils-vscode.enableCodeLens**.
 
 <br>
 The extension scans for definitions in the paths specified by the setting iqgeo-utils-vscode.searchPaths (see below).<br>
@@ -59,6 +61,7 @@ Files are automatically rescanned when saved.
     The search supports \<method name\> or \<class name\> or \<class\>.\<method\><br>
     Use \<class name\>. to list all functions for a class.<br>
     Use @\<partial path\> to list classes matching the path.<br>
+    Use '.' to list symbols from the current file.<br>
 
     The search is case-insensitive. Matching inherited methods are shown in results.<br>
 
