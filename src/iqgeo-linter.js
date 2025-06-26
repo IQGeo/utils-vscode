@@ -538,7 +538,7 @@ export class IQGeoLinter {
             return types;
         }
 
-        const reg = /(?:\w+\s*:\s*"?([\w|.\s]+)|(\w+))/;
+        const reg = /(?:\w+\s*:\s*"?([\w|.\s\[\],]+)|(\w+))/;
         const parts = str.split(',');
         const paramStrings = [];
         let testStr = '';

@@ -18,14 +18,16 @@ export class IQGeoJSSearch {
     functionReg = /^\s*(?:async\s+|static\s+|#)*\*?(\w+)\s*\((.*?)\)\s*{/;
     functionMultiLineReg = /^\s*(async\s*|static\s*|#)*\*?\w+\s*\(\s*$/;
     constFunctionReg = /^\s*const\s+(\w+)\s*=\s*(?:async\s+)?function\*?\s*\(/;
-    constArrowFunctionReg = /^\s*const\s+(\w+)\s*=\s*(\(.*?\)|[^\s[{][^;.]*?)\s+=>\s+/;
+    constArrowFunctionReg = /^\s*const\s+(\w+)\s*=\s*(?:async\s+)?(\(.*?\)|[^\s[{][^;.]*?)\s+=>\s+/;
     constFunctionMultiLineReg = /^\s*const\s+(\w+)\s*=\s*/;
-    constArrowFunctionMultiLineReg = /^\s*const\s+(\w+)\s*=\s*(\(.*?|[^\s[{][^;.]*?$|$)/;
+    constArrowFunctionMultiLineReg =
+        /^\s*const\s+(\w+)\s*=\s*(?:async\s+)?(\(.*?|[^\s[{][^;.]*?$|$)/;
     noConstFunctionReg = /^\s*(?:async\s+)?function\*?\s+(\w+)\s*\(/;
-    arrowFunctionReg = /^\s*(?:async\s+)?(\w+)\s*=\s*(\(.*?\)|[^;.]*?)\s+=>\s+/;
+    arrowFunctionReg = /^\s*(?:async\s+)?(\w+)\s*=\s*(?:async\s+)?(?:\((.*?)\)|([^;.]*?))\s+=>\s+/;
+    arrowFunctionMultiLineReg = /^\s*(?:async\s+)?(\w+)\s*=\s*/;
     exportFunctionReg = /^export\s+(?:(?:default|async)\s+)*function\*?\s+(\w+)\s*\(/;
     exportArrowFunctionReg =
-        /^export\s+(?:(?:default|async|const)\s+)*(\w+)\s*=\s*(\(.*?\)|[^;.]*?)\s+=>\s/;
+        /^export\s+(?:(?:default|async|const)\s+)*(\w+)\s*=\s*(?:async\s+)?(\(.*?\)|[^;.]*?)\s+=>\s/;
     exportArrowFunctionMultiLineReg = /^export\s+((default|async|const)\s+)*(\w+)\s*=/;
     exportFunctionResultReg = /^export\s+(?:(?:default|const)\s+)*(\w+)\s*=\s*.*?(\w+)\s*\(/;
     includeMixinReg = /^\s*this.include\(\s*(\w+)\s*\)/;
@@ -403,7 +405,7 @@ export class IQGeoJSSearch {
 
         match = str.match(this.arrowFunctionReg);
         if (match) {
-            return [match[1], match[2]];
+            return [match[1], match[2] || match[3]];
         }
 
         match = Utils.matchMultiLine(
@@ -415,6 +417,17 @@ export class IQGeoJSSearch {
         );
         if (match) {
             return [match[1], match[2]];
+        }
+
+        match = Utils.matchMultiLine(
+            str,
+            line,
+            fileLines,
+            this.arrowFunctionMultiLineReg,
+            this.arrowFunctionReg
+        );
+        if (match) {
+            return [match[1], match[2] || match[3]];
         }
 
         return [];
