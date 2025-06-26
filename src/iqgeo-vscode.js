@@ -5,6 +5,7 @@ import util from 'util';
 import find from 'findit';
 import { IQGeoSearch } from './search/iqgeo-search';
 import { IQGeoJSSearch } from './search/iqgeo-js-search';
+import { IQGeoTSSearch } from './search/iqgeo-ts-search';
 import { IQGeoPythonSearch } from './search/iqgeo-python-search';
 import { IQGeoLinter } from './iqgeo-linter';
 import { IQGeoJSDoc } from './iqgeo-jsdoc';
@@ -35,7 +36,7 @@ export class IQGeoVSCode {
      */
     constructor(context, outputChannel) {
         this.iqgeoSearch = new IQGeoSearch(this, context);
-        this.linter = new IQGeoLinter(this);
+        this.linter = new IQGeoLinter(this, context);
         this.iqgeoJSDoc = new IQGeoJSDoc(this, context);
         this.watchManager = new IQGeoWatch(this);
         this.historyManager = new IQGeoHistoryManager(this, context);
@@ -44,7 +45,7 @@ export class IQGeoVSCode {
         this.symbols = {};
         this.classes = new Map();
         this.parents = new Map();
-        this.exportedFunctions = new Map();
+        this.functions = new Map();
         this.esClasses = [];
         this.rootFolders = [];
         this.allFiles = new Set();
@@ -77,6 +78,7 @@ export class IQGeoVSCode {
         context.subscriptions.push(vscode.languages.registerWorkspaceSymbolProvider(this));
 
         this.iqgeoJSSearch = new IQGeoJSSearch(this);
+        this.iqgeoTSSearch = new IQGeoTSSearch(this);
         this.iqgeoPythonSearch = new IQGeoPythonSearch(this);
 
         this._languageConfig = [
@@ -84,6 +86,11 @@ export class IQGeoVSCode {
                 languageId: 'javascript',
                 extension: 'js',
                 searchEngine: this.iqgeoJSSearch,
+            },
+            {
+                languageId: 'typescript',
+                extension: 'ts',
+                searchEngine: this.iqgeoTSSearch,
             },
             {
                 languageId: 'python',
@@ -174,7 +181,7 @@ export class IQGeoVSCode {
 
         const imports = this._getNamedImports(doc);
         if (!imports.includes(name)) {
-            for (const result of this.getExportedFunctions(name, 'javascript')) {
+            for (const result of this.getFunctions(name, 'javascript', true)) {
                 if (result && (!productCode || !this._inTestFolder(result))) {
                     if (result.location) {
                         locations.push(result.location);
@@ -667,7 +674,7 @@ export class IQGeoVSCode {
         matchOptions,
         symbols,
         max,
-        { searchAll = false, languageIds = ['javascript', 'python'] }
+        { searchAll = false, languageIds = ['javascript', 'typescript', 'python'] }
     ) {
         const includeESOutside = this._includeESOutsideWorkspace();
 
@@ -688,14 +695,14 @@ export class IQGeoVSCode {
         }
     }
 
-    _findExported(
+    _findFunctions(
         methodString,
         matchOptions,
         symbols,
         max,
-        { searchAll = false, languageIds = ['javascript', 'python'] }
+        { searchAll = false, languageIds = ['javascript', 'typescript', 'python'] }
     ) {
-        for (const methodData of this.allExportedFunctions()) {
+        for (const methodData of this.allFunctions()) {
             if (!languageIds.includes(methodData.languageId)) continue;
 
             const methodName = methodData.name;
@@ -798,7 +805,7 @@ export class IQGeoVSCode {
             searchClasses = false,
             max = undefined,
             searchAll = false,
-            languageIds = ['javascript', 'python'],
+            languageIds = ['javascript', 'typescript', 'python'],
         }
     ) {
         if (max === undefined) {
@@ -908,7 +915,7 @@ export class IQGeoVSCode {
             }
 
             if (!classString && symbols.length < max) {
-                this._findExported(methodString, methodMatchOptions, symbols, max, {
+                this._findFunctions(methodString, methodMatchOptions, symbols, max, {
                     searchAll,
                     languageIds,
                 });
@@ -944,7 +951,7 @@ export class IQGeoVSCode {
             }
         }
 
-        for (const methodData of this.allExportedFunctions()) {
+        for (const methodData of this.allFunctions()) {
             if (methodData.fileName === fileName) {
                 const sym = this.getMethodSymbol(methodData.name, methodData);
                 symbols.push(sym);
@@ -962,7 +969,7 @@ export class IQGeoVSCode {
     updateClasses() {
         this.classes = new Map();
         this.parents = new Map();
-        this.exportedFunctions = new Map();
+        this.functions = new Map();
         this.esClasses = [];
         this.rootFolders = [];
         this.allFiles = new Set();
@@ -1044,7 +1051,7 @@ export class IQGeoVSCode {
     _generateSearchSummary() {
         const { searchSummary } = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
         if (searchSummary || this.debug) {
-            const exportedFunctions = this.allExportedFunctions();
+            const functions = this.allFunctions();
             const mywClasses = new Map();
             let classesTotal = 0;
             let symbolsTotal = 0;
@@ -1057,15 +1064,15 @@ export class IQGeoVSCode {
                 symbolsTotal += Object.keys(data.methods).length;
             }
 
-            symbolsTotal += exportedFunctions.length;
+            symbolsTotal += functions.length;
 
             const summary = {
                 searchPaths: this._getSearchPaths(),
                 symbolsTotal,
                 classesTotal,
-                exportedFunctionsTotal: exportedFunctions.length,
+                functionsTotal: functions.length,
                 classes: this.classes,
-                exportedFunctions,
+                functions: functions,
                 parents: this.parents,
                 esClasses: this.esClasses,
                 mywClasses,
@@ -1114,10 +1121,10 @@ export class IQGeoVSCode {
             symbolsTotal: summary.symbolsTotal,
             classesTotal: summary.classesTotal,
             esClassesTotal: summary.esClasses.length,
-            exportedFunctionsTotal: summary.exportedFunctionsTotal,
+            functionsTotal: summary.functionsTotal,
             classes: filterInfo(summary.classes),
             mywClasses: filterInfo(summary.mywClasses),
-            exportedFunctions: filterInfo(summary.exportedFunctions),
+            functions: filterInfo(summary.functions),
             parents: summary.parents,
             esClasses: summary.esClasses,
         };
@@ -1177,13 +1184,13 @@ export class IQGeoVSCode {
         return subTypes;
     }
 
-    addExportedFunction(functionName, data) {
+    addFunction(functionName, data) {
         const key = `${functionName}:${data.languageId}`;
-        let allData = this.exportedFunctions.get(key);
+        let allData = this.functions.get(key);
 
         if (!allData) {
             allData = [];
-            this.exportedFunctions.set(key, allData);
+            this.functions.set(key, allData);
         }
 
         data.name = `${functionName}()`;
@@ -1191,14 +1198,18 @@ export class IQGeoVSCode {
         allData.push(data);
     }
 
-    getExportedFunctions(functionName, languageId = 'javascript') {
+    getFunctions(functionName, languageId = 'javascript', exportedOnly = true) {
         const key = `${functionName}:${languageId}`;
-        return this.exportedFunctions.get(key) || [];
+        const allData = this.functions.get(key);
+        if (exportedOnly) {
+            return allData?.filter((data) => data.exported) || [];
+        }
+        return allData || [];
     }
 
-    allExportedFunctions() {
+    allFunctions() {
         const allData = [];
-        for (const dataArray of this.exportedFunctions.values()) {
+        for (const dataArray of this.functions.values()) {
             allData.push(...dataArray);
         }
         return allData;
@@ -1212,13 +1223,13 @@ export class IQGeoVSCode {
             }
         }
 
-        for (const [key, dataArray] of this.exportedFunctions) {
+        for (const [key, dataArray] of this.functions) {
             if (dataArray.find((data) => data.fileName === fileName)) {
                 const newData = dataArray.filter((data) => data.fileName !== fileName);
                 if (newData.length === 0) {
-                    this.exportedFunctions.delete(key);
+                    this.functions.delete(key);
                 } else {
-                    this.exportedFunctions.set(key, newData);
+                    this.functions.set(key, newData);
                 }
             }
         }

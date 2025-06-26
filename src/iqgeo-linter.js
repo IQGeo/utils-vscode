@@ -101,6 +101,8 @@ const IGNORE_METHOD_NAMES = [
     'hasOwn',
 ];
 
+const GATHER_PARAMS = ['...', '*args', '**kwargs'];
+
 /**
  * Linter for IQGeo JavaScript code.
  * Raises errors for:
@@ -111,13 +113,13 @@ const IGNORE_METHOD_NAMES = [
  * - Method calls that can't be resolved
  */
 export class IQGeoLinter {
-    constructor(iqgeoVSCode) {
+    constructor(iqgeoVSCode, context) {
         this.iqgeoVSCode = iqgeoVSCode;
 
         this.diagnosticCollection = vscode.languages.createDiagnosticCollection('iqgeo-javascript');
 
         vscode.workspace.onDidOpenTextDocument((doc) => {
-            if (doc.languageId === 'javascript') {
+            if (['javascript', 'python'].includes(doc.languageId)) {
                 this._checkFile(doc).catch((err) => {
                     this.iqgeoVSCode.outputChannel.error(util.format(err));
                 });
@@ -125,7 +127,7 @@ export class IQGeoLinter {
         });
 
         vscode.workspace.onDidSaveTextDocument((doc) => {
-            if (doc.languageId === 'javascript') {
+            if (['javascript', 'python'].includes(doc.languageId)) {
                 this._checkFile(doc).catch((err) => {
                     this.iqgeoVSCode.outputChannel.error(util.format(err));
                 });
@@ -135,6 +137,12 @@ export class IQGeoLinter {
         vscode.workspace.onDidCloseTextDocument((doc) => {
             this.diagnosticCollection.delete(doc.uri);
         });
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand('iqgeo.checkSubclassSignatures', () =>
+                this.checkSubclassSignatures()
+            )
+        );
     }
 
     _checkClassComments(classes, fileLines, diagnostics, apiSeverity) {
@@ -247,8 +255,12 @@ export class IQGeoLinter {
             }
         }
 
-        for (const methodData of this.iqgeoVSCode.allExportedFunctions()) {
-            if (methodData.fileName === fileName && !['_', '#'].includes(methodData.name[0])) {
+        for (const methodData of this.iqgeoVSCode.allFunctions()) {
+            if (
+                methodData.fileName === fileName &&
+                methodData.exported &&
+                !['_', '#'].includes(methodData.name[0])
+            ) {
                 publicMethods.push(methodData);
             }
         }
@@ -263,6 +275,8 @@ export class IQGeoLinter {
                 if (!/^\/?\*/.test(str)) {
                     const name = methodData.name.split('()')[0];
                     const index = fileLines[methodLine].indexOf(name);
+                    if (index === -1) break;
+
                     const range = new vscode.Range(
                         methodLine,
                         index,
@@ -312,6 +326,8 @@ export class IQGeoLinter {
 
             if (!foundSuperCall) {
                 const index = fileLines[methodLine].indexOf(name);
+                if (index === -1) continue;
+
                 const range = new vscode.Range(methodLine, index, methodLine, index + name.length);
                 const d = new vscode.Diagnostic(
                     range,
@@ -393,6 +409,201 @@ export class IQGeoLinter {
         }
     }
 
+    checkSubclassSignatures() {
+        let classCount = 0;
+        let warningCount = 0;
+
+        for (let languageId of ['javascript', 'python']) {
+            this.iqgeoVSCode.outputChannel.info(
+                `Checking subclass signatures for ${languageId}...`
+            );
+
+            for (const key of this.iqgeoVSCode.classes.keys()) {
+                const [className, id] = key.split(':');
+                if (id !== languageId) continue;
+
+                classCount++;
+
+                const classData = this.iqgeoVSCode.getClassData(className, languageId);
+                for (const methodData of Object.values(classData.methods)) {
+                    const parentMethod = this._checkSignature(className, methodData, languageId);
+                    if (parentMethod) {
+                        this.iqgeoVSCode.outputChannel.info(
+                            `${className}.${
+                                methodData.name
+                            } does not match signature of base method in parent ${
+                                parentMethod.className
+                            }.\n (${methodData.paramString
+                                .trim()
+                                .replace(/\s\s+/g, ' ')}) vs (${parentMethod.paramString
+                                .trim()
+                                .replace(/\s\s+/g, ' ')})`
+                        );
+                        warningCount++;
+                    }
+                }
+            }
+        }
+
+        this.iqgeoVSCode.outputChannel.info(`${classCount} classes checked.`);
+
+        if (warningCount > 0) {
+            this.iqgeoVSCode.outputChannel.info(
+                `Found ${warningCount} subclass signature warnings.`
+            );
+        }
+    }
+
+    _checkSignaturesForClasses(classes, fileLines, diagnostics, languageId) {
+        for (const className of classes) {
+            const classData = this.iqgeoVSCode.getClassData(className, languageId);
+            if (!classData) continue;
+
+            for (const methodData of Object.values(classData.methods)) {
+                const parentMethod = this._checkSignature(className, methodData, languageId);
+                if (parentMethod) {
+                    const methodLine = methodData.line;
+                    const name = methodData.name.split('()')[0];
+                    const index = fileLines[methodLine].indexOf(name);
+                    if (index === -1) continue;
+
+                    const range = new vscode.Range(
+                        methodLine,
+                        index,
+                        methodLine,
+                        index + name.length
+                    );
+                    const d = new vscode.Diagnostic(
+                        range,
+                        `'${methodData.name}' does not match signature of base method in parent '${parentMethod.className}'`,
+                        vscode.DiagnosticSeverity.Warning
+                    );
+                    diagnostics.push(d);
+                }
+            }
+        }
+    }
+
+    _checkSignature(className, methodData, languageId) {
+        if (!methodData.paramString) return;
+        if (languageId === 'python' && methodData.name === '__init__()') return;
+        if (languageId === 'javascript' && methodData.name === 'constructor()') return;
+
+        const methParamTypes = this._getParamTypes(methodData.paramString);
+        const nPosParams = this._numPositionalParams(methParamTypes);
+
+        for (const parentMethod of this._getSuperMethodData(
+            className,
+            languageId,
+            methodData.name
+        )) {
+            const parentParamTypes = this._getParamTypes(parentMethod.paramString);
+            const nParentPosParams = this._numPositionalParams(parentParamTypes);
+
+            if (
+                (nPosParams > nParentPosParams &&
+                    !methParamTypes.every(
+                        (p, index) =>
+                            index < nParentPosParams || index >= nPosParams || p === 'param_default'
+                    )) ||
+                (nPosParams < nParentPosParams &&
+                    !GATHER_PARAMS.some((p) => methParamTypes.includes(p)))
+            ) {
+                return parentMethod;
+            }
+        }
+    }
+
+    _getSuperMethodData(className, languageId, methodName, result = []) {
+        const parents = this.iqgeoVSCode.getParents(className, languageId);
+
+        for (const parentName of parents) {
+            const parentData = this.iqgeoVSCode.getClassData(parentName, languageId);
+            if (parentData) {
+                const parentMethodData = parentData.methods[methodName];
+                if (parentMethodData && parentMethodData.kind === vscode.SymbolKind.Method) {
+                    result.push(parentMethodData);
+                } else {
+                    this._getSuperMethodData(parentName, languageId, methodName, result);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    _getParamTypes(str) {
+        const types = [];
+        if (!str || str.trim().length === 0) {
+            return types;
+        }
+
+        const reg = /(?:\w+\s*:\s*"?([\w|.\s\[\],]+)|(\w+))/;
+        const parts = str.split(',');
+        const paramStrings = [];
+        let testStr = '';
+
+        for (let i = 0; i < parts.length; i++) {
+            testStr += parts[i];
+            const count =
+                (testStr.match(/[\[{]/g) || []).length - (testStr.match(/[\]}]/g) || []).length;
+            if (count === 0) {
+                testStr = testStr.trim();
+                if (testStr.length > 0) {
+                    paramStrings.push(testStr);
+                    testStr = '';
+                }
+            } else {
+                testStr += ',';
+            }
+        }
+
+        for (const paramStr of paramStrings) {
+            if (paramStr.startsWith('...')) {
+                types.push('...');
+            } else if (paramStr.startsWith('{')) {
+                types.push('{}');
+            } else if (paramStr.startsWith('[')) {
+                types.push('[]');
+            } else if (paramStr.startsWith('**')) {
+                types.push('**kwargs');
+            } else if (paramStr === '*') {
+                types.push('*');
+            } else if (paramStr.startsWith('*')) {
+                types.push('*args');
+            } else if (paramStr === '/') {
+                types.push('/');
+            } else if (paramStr.includes('=')) {
+                types.push('param_default');
+            } else {
+                const match = paramStr.match(reg);
+                if (match && match[1]) {
+                    types.push(match[1].trim());
+                } else {
+                    types.push('param');
+                }
+            }
+        }
+
+        // Debug
+        // console.log(str, ' >> ', types.join(', '));
+
+        return types;
+    }
+
+    _numPositionalParams(types) {
+        let count = 0;
+        for (const type of types) {
+            if (type === '...' || type === '*' || type === '*args' || type === '*kwargs') {
+                break;
+            }
+            if (type !== '/') {
+                count++;
+            }
+        }
+        return count;
+    }
+
     async _checkFile(doc) {
         const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
         if (!config.enableLinting) return;
@@ -419,22 +630,28 @@ export class IQGeoLinter {
 
         const uri = doc.uri;
         const fileLines = Utils.getFileLines(doc.fileName);
-        const len = fileLines.length;
+        const languageId = doc.languageId;
 
-        for (let line = 0; line < len; line++) {
-            const str = fileLines[line];
-            this._checkProtectedCalls(line, str, diagnostics);
+        if (languageId === 'javascript') {
+            const len = fileLines.length;
+
+            for (let line = 0; line < len; line++) {
+                const str = fileLines[line];
+                this._checkProtectedCalls(line, str, diagnostics);
+            }
+
+            if (config.enableMethodCheck) {
+                await this._checkMethodCalls(uri, fileLines, diagnostics);
+            }
+
+            this._checkProtectedSuperCalls(classes, fileLines, diagnostics);
+
+            this._checkClassComments(classes, fileLines, diagnostics, apiSeverity);
+
+            this._checkMethodComments(classes, fileName, fileLines, diagnostics, apiSeverity);
         }
 
-        if (config.enableMethodCheck) {
-            await this._checkMethodCalls(uri, fileLines, diagnostics);
-        }
-
-        this._checkProtectedSuperCalls(classes, fileLines, diagnostics);
-
-        this._checkClassComments(classes, fileLines, diagnostics, apiSeverity);
-
-        this._checkMethodComments(classes, fileName, fileLines, diagnostics, apiSeverity);
+        this._checkSignaturesForClasses(classes, fileLines, diagnostics, languageId);
 
         this.diagnosticCollection.set(uri, diagnostics);
     }
@@ -445,7 +662,7 @@ export class IQGeoLinter {
      */
     checkOpenFiles() {
         for (const doc of vscode.workspace.textDocuments) {
-            if (doc.languageId === 'javascript') {
+            if (['javascript', 'python'].includes(doc.languageId)) {
                 this._checkFile(doc).catch((err) => {
                     this.iqgeoVSCode.outputChannel.error(util.format(err));
                 });
