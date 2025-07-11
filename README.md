@@ -165,6 +165,10 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.26
+
+-   Improvements to Update and Pull commands from utils-project-update.
+
 ### 1.0.25
 
 -   Improvements to Update and Pull commands from utils-project-update.
