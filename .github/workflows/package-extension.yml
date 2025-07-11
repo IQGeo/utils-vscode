@@ -1,0 +1,45 @@
+name: Build Extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to package'
+        required: true
+        default: 'main'
+        type: string
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Update dependencies
+      run: npm update
+    
+    - name: Build extension
+      run: node build.mjs
+    
+    - name: Package extension
+      run: npx vsce package
+    
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: iqgeo-utils-vscode-extension
+        path: '*.vsix'
+        retention-days: 30
