@@ -6,6 +6,10 @@ const JS_File = {
     scheme: 'file',
     language: 'javascript',
 };
+const TS_File = {
+    scheme: 'file',
+    language: 'typescript',
+};
 const PY_File = {
     scheme: 'file',
     language: 'python',
@@ -18,7 +22,7 @@ export class IQGeoHistoryManager {
         this.iqgeoVSCode = iqgeoVSCode;
 
         context.subscriptions.push(
-            vscode.languages.registerHoverProvider([JS_File, PY_File], this)
+            vscode.languages.registerHoverProvider([JS_File, TS_File, PY_File], this)
         );
 
         context.subscriptions.push(
@@ -84,7 +88,7 @@ export class IQGeoHistoryManager {
         const doc = editor.document;
         if (!doc) return;
 
-        if (doc.languageId !== 'javascript' && doc.languageId !== 'python') return;
+        if (!['javascript', 'typescript', 'python'].includes(doc.languageId)) return;
 
         const viewColumn = editor.viewColumn;
         const fileName = doc.fileName;
@@ -528,7 +532,7 @@ export class IQGeoHistoryManager {
     }
 
     _stringBeforeComment(doc, text) {
-        const testStr = doc.languageId === 'javascript' ? '//' : '#';
+        const testStr = doc.languageId === 'python' ? '#' : '//';
         let index = text.indexOf(testStr);
 
         while (index > -1) {
