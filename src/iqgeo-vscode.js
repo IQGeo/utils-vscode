@@ -99,10 +99,6 @@ export class IQGeoVSCode {
             },
         ];
 
-        vscode.workspace.onDidSaveTextDocument((doc) => {
-            this.updateClassesForDoc(doc);
-        });
-
         this._initSymbolsConfig();
     }
 
