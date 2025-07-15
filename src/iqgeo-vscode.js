@@ -99,10 +99,6 @@ export class IQGeoVSCode {
             },
         ];
 
-        vscode.workspace.onDidSaveTextDocument((doc) => {
-            this.updateClassesForDoc(doc);
-        });
-
         this._initSymbolsConfig();
     }
 
@@ -602,15 +598,16 @@ export class IQGeoVSCode {
 
         for (const [methodName, methodData] of Object.entries(classData.methods)) {
             const name = `${className}.${methodName}`;
+            const key = `${name}:${languageId}`;
 
             if (
-                !doneMethods.includes(name) &&
+                !doneMethods.includes(key) &&
                 this._matchString(methodName, methodString, matchOptions)
             ) {
                 const sym = this.getMethodSymbol(name, methodData);
 
                 symbols.push(sym);
-                doneMethods.push(name);
+                doneMethods.push(key);
 
                 if (symbols.length === max) return;
             }

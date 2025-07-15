@@ -127,6 +127,8 @@ export class IQGeoLinter {
         });
 
         vscode.workspace.onDidSaveTextDocument((doc) => {
+            this.iqgeoVSCode.updateClassesForDoc(doc);
+
             if (['javascript', 'python'].includes(doc.languageId)) {
                 this._checkFile(doc).catch((err) => {
                     this.iqgeoVSCode.outputChannel.error(util.format(err));
