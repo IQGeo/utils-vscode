@@ -967,15 +967,40 @@ export class IQGeoVSCode {
         this.rootFolders = [];
         this.allFiles = new Set();
 
+        const excludeDirs = this._getExDirectories();
+
         for (const searchDir of this._getSearchPaths()) {
             const startTime = new Date().getTime();
             let nFiles = 0;
-
+            let nSkipped = 0;
             if (fs.existsSync(searchDir)) {
                 const finder = find(searchDir);
 
                 finder.on('directory', (dir, stat, stop) => {
                     const base = path.basename(dir);
+
+                    // Check if directory should be skipped (supports wildcards)
+                    let matchedSkip = null;
+                    const shouldSkip = excludeDirs.some((skip) => {
+                        let matches = false;
+                        if (skip.type === 'regex') {
+                            matches = skip.matcher.test(dir);
+                        } else {
+                            matches = dir.startsWith(skip.matcher);
+                        }
+                        if (matches) {
+                            matchedSkip = skip;
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    if (shouldSkip) {
+                        nSkipped++;
+                        stop();
+                        return;
+                    }
+
                     if (
                         IGNORE_DIRS.find((ignore) =>
                             ignore instanceof RegExp ? ignore.test(dir) : ignore === base
@@ -995,6 +1020,18 @@ export class IQGeoVSCode {
                         return;
                     }
 
+                    const fileInExcludedDir = excludeDirs.some((exclude) => {
+                        if (exclude.type === 'regex') {
+                            return exclude.matcher.test(file);
+                        } else {
+                            return file.startsWith(exclude.matcher);
+                        }
+                    });
+
+                    if (fileInExcludedDir) {
+                        return;
+                    }
+
                     const parts = base.split('.');
                     const ext = parts[parts.length - 1];
                     for (const config of this._languageConfig) {
@@ -1010,7 +1047,7 @@ export class IQGeoVSCode {
 
                 finder.on('end', () => {
                     const searchTime = new Date().getTime() - startTime;
-                    const msg = `Search complete: ${searchDir} (${nFiles} files in ${searchTime} ms)`;
+                    const msg = `Search complete: ${searchDir} (${nFiles} files, ${nSkipped} dirs skipped in ${searchTime} ms)`;
 
                     vscode.window.showInformationMessage(msg);
 
@@ -1356,6 +1393,36 @@ export class IQGeoVSCode {
             }
         }
         return paths;
+    }
+
+    _getExDirectories() {
+        const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
+        let paths = config.get('searchPaths.excludeDirectories') || '';
+
+        if (paths.length) {
+            paths = paths
+                .split(';')
+                .map((p) => p.trim())
+                .filter((p) => p.length > 0);
+        } else {
+            paths = [];
+        }
+
+        // Convert paths to matchers (supporting wildcards like */workflow_manager/public/lib)
+        const matchers = paths.map((pattern) => {
+            if (pattern.includes('*')) {
+                // Convert glob pattern to regex
+                // * matches any characters (greedy for paths)
+                const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+                // Match if directory path contains the pattern
+                const regex = new RegExp(regexPattern);
+                return { type: 'regex', pattern, matcher: regex };
+            } else {
+                return { type: 'exact', pattern, matcher: pattern };
+            }
+        });
+
+        return matchers;
     }
 
     _includeESOutsideWorkspace() {
