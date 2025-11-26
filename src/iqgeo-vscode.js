@@ -983,6 +983,22 @@ export class IQGeoVSCode {
 
                 finder.on('directory', (dir, stat, stop) => {
                     const base = path.basename(dir);
+
+                    // Check if directory should be skipped (supports wildcards)
+                    const shouldSkip = excludeDirs.some((skip) => {
+                        if (skip.type === 'regex') {
+                            return skip.matcher.test(dir);
+                        } else {
+                            return dir.startsWith(skip.matcher);
+                        }
+                    });
+
+                    if (shouldSkip) {
+                        nSkipped++;
+                        stop();
+                        return;
+                    }
+
                     if (
                         IGNORE_DIRS.find((ignore) =>
                             ignore instanceof RegExp ? ignore.test(dir) : ignore === base
@@ -994,28 +1010,6 @@ export class IQGeoVSCode {
 
                 finder.on('file', (file) => {
                     const base = path.basename(file);
-
-                    // Check if directory should be skipped (supports wildcards)
-                    let matchedSkip = null;
-                    const shouldSkip = excludeDirs.some((skip) => {
-                        let matches = false;
-                        if (skip.type === 'regex') {
-                            matches = skip.matcher.test(dir);
-                        } else {
-                            matches = dir.startsWith(skip.matcher);
-                        }
-                        if (matches) {
-                            matchedSkip = skip;
-                            return true;
-                        }
-                        return false;
-                    });
-
-                    if (shouldSkip) {
-                        nSkipped++;
-                        stop();
-                        return;
-                    }
                     if (
                         IGNORE_FILES.find((ignore) =>
                             ignore instanceof RegExp ? ignore.test(file) : ignore === base
