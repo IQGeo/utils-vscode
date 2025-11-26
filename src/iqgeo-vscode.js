@@ -1396,6 +1396,16 @@ export class IQGeoVSCode {
         return paths;
     }
 
+    /**
+     * Retrieves and parses the excluded directories configuration.
+     * Converts the semicolon-separated list of directory patterns into matcher objects
+     * that support both exact path matching and wildcard patterns.
+     * 
+     * Wildcard patterns (e.g., "&#42;/workflow_manager/public/lib") are converted to regex
+     * matchers, while exact paths are matched using string prefix matching.
+     * 
+     * @returns {Array<{type: string, pattern: string, matcher: (RegExp|string)}>} Array of matcher objects
+     */
     _getExDirectories() {
         const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
         let paths = config.get('searchPaths.excludeDirectories') || '';
@@ -1409,13 +1419,9 @@ export class IQGeoVSCode {
             paths = [];
         }
 
-        // Convert paths to matchers (supporting wildcards like */workflow_manager/public/lib)
         const matchers = paths.map((pattern) => {
             if (pattern.includes('*')) {
-                // Convert glob pattern to regex
-                // * matches any characters (greedy for paths)
                 const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
-                // Match if directory path contains the pattern
                 const regex = new RegExp(regexPattern);
                 return { type: 'regex', pattern, matcher: regex };
             } else {
