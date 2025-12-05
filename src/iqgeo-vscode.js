@@ -1018,18 +1018,6 @@ export class IQGeoVSCode {
                         return;
                     }
 
-                    const fileInExcludedDir = excludeDirs.some((exclude) => {
-                        if (exclude.type === 'regex') {
-                            return exclude.matcher.test(file);
-                        } else {
-                            return file.startsWith(exclude.matcher);
-                        }
-                    });
-
-                    if (fileInExcludedDir) {
-                        return;
-                    }
-
                     const parts = base.split('.');
                     const ext = parts[parts.length - 1];
                     for (const config of this._languageConfig) {
@@ -1400,10 +1388,10 @@ export class IQGeoVSCode {
      * Retrieves and parses the excluded directories configuration.
      * Converts the semicolon-separated list of directory patterns into matcher objects
      * that support both exact path matching and wildcard patterns.
-     * 
+     *
      * Wildcard patterns (e.g., "&#42;/workflow_manager/public/lib") are converted to regex
      * matchers, while exact paths are matched using string prefix matching.
-     * 
+     *
      * @returns {Array<{type: string, pattern: string, matcher: (RegExp|string)}>} Array of matcher objects
      */
     _getExDirectories() {
