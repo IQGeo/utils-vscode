@@ -971,15 +971,34 @@ export class IQGeoVSCode {
         this.rootFolders = [];
         this.allFiles = new Set();
 
+        const excludeDirs = this._getExDirectories();
+
         for (const searchDir of this._getSearchPaths()) {
             const startTime = new Date().getTime();
             let nFiles = 0;
 
+            let nSkipped = 0;
             if (fs.existsSync(searchDir)) {
                 const finder = find(searchDir);
 
                 finder.on('directory', (dir, stat, stop) => {
                     const base = path.basename(dir);
+
+                    // Check if directory should be skipped (supports wildcards)
+                    const shouldSkip = excludeDirs.some((skip) => {
+                        if (skip.type === 'regex') {
+                            return skip.matcher.test(dir);
+                        } else {
+                            return dir.startsWith(skip.matcher);
+                        }
+                    });
+
+                    if (shouldSkip) {
+                        nSkipped++;
+                        stop();
+                        return;
+                    }
+
                     if (
                         IGNORE_DIRS.find((ignore) =>
                             ignore instanceof RegExp ? ignore.test(dir) : ignore === base
@@ -1014,8 +1033,7 @@ export class IQGeoVSCode {
 
                 finder.on('end', () => {
                     const searchTime = new Date().getTime() - startTime;
-                    const msg = `Search complete: ${searchDir} (${nFiles} files in ${searchTime} ms)`;
-
+                    const msg = `Search complete: ${searchDir} (${nFiles} files, ${nSkipped} dirs skipped in ${searchTime} ms)`;
                     vscode.window.showInformationMessage(msg);
 
                     this._generateSearchSummary();
@@ -1364,6 +1382,42 @@ export class IQGeoVSCode {
             }
         }
         return paths;
+    }
+
+    /**
+     * Retrieves and parses the excluded directories configuration.
+     * Converts the semicolon-separated list of directory patterns into matcher objects
+     * that support both exact path matching and wildcard patterns.
+     *
+     * Wildcard patterns (e.g., "&#42;/workflow_manager/public/lib") are converted to regex
+     * matchers, while exact paths are matched using string prefix matching.
+     *
+     * @returns {Array<{type: string, pattern: string, matcher: (RegExp|string)}>} Array of matcher objects
+     */
+    _getExDirectories() {
+        const config = vscode.workspace.getConfiguration('iqgeo-utils-vscode');
+        let paths = config.get('searchPaths.excludeDirectories') || '';
+
+        if (paths.length) {
+            paths = paths
+                .split(';')
+                .map((p) => p.trim())
+                .filter((p) => p.length > 0);
+        } else {
+            paths = [];
+        }
+
+        const matchers = paths.map((pattern) => {
+            if (pattern.includes('*')) {
+                const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+                const regex = new RegExp(regexPattern);
+                return { type: 'regex', pattern, matcher: regex };
+            } else {
+                return { type: 'exact', pattern, matcher: pattern };
+            }
+        });
+
+        return matchers;
     }
 
     _includeESOutsideWorkspace() {
