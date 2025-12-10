@@ -247,6 +247,7 @@ export class IQGeoLinter {
 
         for (const className of classes) {
             const classData = this.iqgeoVSCode.getClassData(className, 'javascript');
+            if (!classData) continue;
             for (const [methodName, methodData] of Object.entries(classData.methods)) {
                 if (
                     !['_', '#'].includes(methodName[0]) &&
@@ -302,6 +303,7 @@ export class IQGeoLinter {
 
         for (const className of classes) {
             const classData = this.iqgeoVSCode.getClassData(className, 'javascript');
+            if (!classData) continue;
             for (const [methodName, methodData] of Object.entries(classData.methods)) {
                 if (methodName[0] === '_' && this._hasParentFunction(className, methodName)) {
                     subProtectedMethods.push(methodData);
@@ -427,6 +429,8 @@ export class IQGeoLinter {
                 classCount++;
 
                 const classData = this.iqgeoVSCode.getClassData(className, languageId);
+                if (!classData) continue;
+
                 for (const methodData of Object.values(classData.methods)) {
                     const parentMethod = this._checkSignature(className, methodData, languageId);
                     if (parentMethod) {

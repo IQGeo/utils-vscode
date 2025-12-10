@@ -171,6 +171,7 @@ Shortcuts to control the layout of the workspace
 ### 1.0.29
 
 -   Added functinoality to exclude directories from patterns searching to improve speed.
+-   Fix searching by class when a mock exists.
 
 ### 1.0.28
 
