@@ -448,7 +448,12 @@ export class IQGeoVSCode {
                 classData.location = loc;
             }
 
-            sym = new vscode.SymbolInformation(name, kind, undefined, loc);
+            let symName = name;
+            if (classData.testFolder) {
+                symName = `${name} [M]`;
+            }
+
+            sym = new vscode.SymbolInformation(symName, kind, undefined, loc);
             sym._fileName = classData.fileName;
             sym._className = name;
             sym._icon = this._getIcon(kind);
@@ -1149,9 +1154,14 @@ export class IQGeoVSCode {
     }
 
     addClassData(className, data) {
-        const key = `${className}:${data.languageId}`;
+        let key = `${className}:${data.languageId}`;
+        if (this._isTestFile(data?.fileName)) {
+            key += `:${data.fileName}`;
+            data.testFolder = true;
+        } else {
+            this.parents.delete(key);
+        }
         this.classes.set(key, data);
-        this.parents.delete(key);
     }
 
     getClassData(className, languageId = 'javascript') {
