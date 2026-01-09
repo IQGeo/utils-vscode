@@ -168,6 +168,10 @@ Shortcuts to control the layout of the workspace
 
 ## Release Notes
 
+### 1.0.30
+
+-   Improvements to Update and Pull commands from utils-project-update.
+
 ### 1.0.29
 
 -   Added functinoality to exclude directories from patterns searching to improve speed.
