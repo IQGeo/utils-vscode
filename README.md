@@ -22,7 +22,6 @@ The extension provides the following features:
 3. Linting for API usage and subclassing.
 
 4. Set of shortcuts for
-
     - Definition search
     - Code navigation
     - Text search
@@ -57,250 +56,254 @@ Files are automatically rescanned when saved.
 
 ### Definition Search
 
--   Search Definitions = **CMD + T** (**Ctrl + T**).<br>
-    The search supports \<method name\> or \<class name\> or \<class\>.\<method\><br>
-    Use \<class name\>. to list all functions for a class.<br>
-    Use @\<partial path\> to list classes matching the path.<br>
-    Use '.' to list symbols from the current file.<br>
+- Search Definitions = **CMD + T** (**Ctrl + T**).<br>
+  The search supports \<method name\> or \<class name\> or \<class\>.\<method\><br>
+  Use \<class name\>. to list all functions for a class.<br>
+  Use @\<partial path\> to list classes matching the path.<br>
+  Use '.' to list symbols from the current file.<br>
 
     The search is case-insensitive. Matching inherited methods are shown in results.<br>
 
     Use the up and down arrows in the search result list to update the preview.
 
--   Scan Files (IQGeo Refresh Symbols) = **Ctrl + T** (**Alt + T**)<br>
-    (e.g. after changing branch)
+- Scan Files (IQGeo Refresh Symbols) = **Ctrl + T** (**Alt + T**)<br>
+  (e.g. after changing branch)
 
 ### Text Search
 
--   Search in the root folder = **CMD + G** (**Ctrl + G**)
+- Search in the root folder = **CMD + G** (**Ctrl + G**)
 
--   Search in the workspace (repository) folder = **CMD + R** (**Ctrl + R**)
+- Search in the workspace (repository) folder = **CMD + R** (**Ctrl + R**)
 
--   Search core folder in Platform = **Shift + CMD + R** (**Shift + Ctrl + R**)
+- Search core folder in Platform = **Shift + CMD + R** (**Shift + Ctrl + R**)
 
--   Open Editor Search with current selection or word = **Ctrl + G** (**Alt + G**)
+- Open Editor Search with current selection or word = **Ctrl + G** (**Alt + G**)
 
 ### Navigation
 
--   Go to Definition = **CMD + .** (**Alt + .**)
+- Go to Definition = **CMD + .** (**Alt + .**)
 
--   Go Back = **Ctrl + CMD + Left** (**Alt + Left**)
+- Go Back = **Ctrl + CMD + Left** (**Alt + Left**)
 
--   Definition search with current selection or word = **CMD + ;** (**Ctrl + ;**)
+- Definition search with current selection or word = **CMD + ;** (**Ctrl + ;**)
 
--   Peek Definition = **Ctrl + .**
+- Peek Definition = **Ctrl + .**
 
--   Go to References = **CMD + ,** (**Alt + ,**)
-
-<br>
-
--   Definition Up = **CMD + PageUp** (**Ctrl + PageUp**)
-
--   Definition Down = **CMD + PageDown** (**Ctrl + PageDown**)
+- Go to References = **CMD + ,** (**Alt + ,**)
 
 <br>
 
--   Reveal current file in Explorer = **CMD + E** (**Ctrl + E**)
+- Definition Up = **CMD + PageUp** (**Ctrl + PageUp**)
 
--   Toggle Editor/Terminal Focus = **CMD + '** (**Ctrl + '**)
+- Definition Down = **CMD + PageDown** (**Ctrl + PageDown**)
 
--   Toggle terminal visibility = **Ctrl + '** (**Alt + '**)
+<br>
+
+- Reveal current file in Explorer = **CMD + E** (**Ctrl + E**)
+
+- Toggle Editor/Terminal Focus = **CMD + '** (**Ctrl + '**)
+
+- Toggle terminal visibility = **Ctrl + '** (**Alt + '**)
 
 ### JSDoc
 
--   Insert JSDoc for function or class definition = **Ctrl + Shift + D**
+- Insert JSDoc for function or class definition = **Ctrl + Shift + D**
 
 ### Layouts
 
 Shortcuts to control the layout of the workspace
 
--   **Ctrl + 1** = Sidebar + Editor + Terminal
--   **Ctrl + 2** = Editor + Terminal
--   **Ctrl + 3** = Sidebar + Editor
--   **Ctrl + 4** = Explorer + Editor
--   **Ctrl + 5** = Source Control + Editor
--   **Ctrl + 6** = Editor + Terminal Right
--   **Ctrl + 7** = Editor
--   **Ctrl + 8** = Maximise Editor Group
+- **Ctrl + 1** = Sidebar + Editor + Terminal
+- **Ctrl + 2** = Editor + Terminal
+- **Ctrl + 3** = Sidebar + Editor
+- **Ctrl + 4** = Explorer + Editor
+- **Ctrl + 5** = Source Control + Editor
+- **Ctrl + 6** = Editor + Terminal Right
+- **Ctrl + 7** = Editor
+- **Ctrl + 8** = Maximise Editor Group
 
 ## Extension Settings
 
--   Search paths for JS and Python definitions. Use ; to separate paths. (Default value is the VS Code workspace folder path)
+- Search paths for JS and Python definitions. Use ; to separate paths. (Default value is the VS Code workspace folder path)
     ```json
     "iqgeo-utils-vscode.searchPaths": "/opt/iqgeo/platform/WebApps"
     ```
--   Maximum number of search results displayed by this extension. (Default value is 500)
+- Maximum number of search results displayed by this extension. (Default value is 500)
     ```json
     "iqgeo-utils-vscode.maxSearchResults": 500
     ```
--   Defines whether a preview of the active result in the search list is shown. (Default value is true)
+- Defines whether a preview of the active result in the search list is shown. (Default value is true)
     ```json
     "iqgeo-utils-vscode.enableSearchPreview": true
     ```
--   Defines whether API and subclassing linting is enabled. (Default value is true)
+- Defines whether API and subclassing linting is enabled. (Default value is true)
     ```json
     "iqgeo-utils-vscode.enableLinting": true
     ```
--   Defines the linting severity for missing API comments. Can be one of "Error", "Warning", "Information" or "Hint". (Default value is "Error")
+- Defines the linting severity for missing API comments. Can be one of "Error", "Warning", "Information" or "Hint". (Default value is "Error")
     ```json
     "iqgeo-utils-vscode.apiLintingSeverity": "Error"
     ```
--   Defines whether workspace layout shortcuts are enabled. (Default value is true)
+- Defines whether workspace layout shortcuts are enabled. (Default value is true)
     ```json
     "iqgeo-utils-vscode.enableLayouts": true
     ```
--   Enable auto restart of Python and browser debug session. (Default value is false)
+- Enable auto restart of Python and browser debug session. (Default value is false)
     ```json
     "iqgeo-utils-vscode.enableAutoRestart": false
     ```
--   Command to watch for changes in the workspace. (Defaults to myw_product watch)
+- Command to watch for changes in the workspace. (Defaults to myw_product watch)
     ```json
     "iqgeo-utils-vscode.watchCommand": "myw_product watch applications_dev --debug"
     ```
--   Command to reload Python when changes are detected. (Defaults to 'touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi')
+- Command to reload Python when changes are detected. (Defaults to 'touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi')
     ```json
     "iqgeo-utils-vscode.pythonRestartCommand": "touch /opt/iqgeo/platform/WebApps/myworldapp.wsgi"
     ```
--   Delay time in ms between a file change and restarting a browser debug session. (Defaults to 1500)
+- Delay time in ms between a file change and restarting a browser debug session. (Defaults to 1500)
     ```json
     "iqgeo-utils-vscode.restartDelay": 1500
     ```
 
 ## Release Notes
 
+### 1.0.31
+
+- Improvements to Update and Pull commands from utils-project-update.
+
 ### 1.0.30
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.29
 
--   Added functinoality to exclude directories from patterns searching to improve speed.
--   Fix searching by class when a mock exists.
+- Added functinoality to exclude directories from patterns searching to improve speed.
+- Fix searching by class when a mock exists.
 
 ### 1.0.28
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.27
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.26
 
--   Improvements to Update and Pull commands from utils-project-update.
--   Added command to check subclass method signatures.
--   Added signature check to file linting for Javascript and Python.
--   Added search support for Typescript.
--   Improved searching for functions in React components.
+- Improvements to Update and Pull commands from utils-project-update.
+- Added command to check subclass method signatures.
+- Added signature check to file linting for Javascript and Python.
+- Added search support for Typescript.
+- Improved searching for functions in React components.
 
 ### 1.0.25
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.24
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.23
 
--   Added experiemental features for searching and code navigation from the editor tooltip and with code lens actions.
--   Improvements to activating and deactivating the JS and Python file watch.
--   Added support for multiple folders in the workspace.
--   Improvements to Update and Pull commands from utils-project-update.
+- Added experiemental features for searching and code navigation from the editor tooltip and with code lens actions.
+- Improvements to activating and deactivating the JS and Python file watch.
+- Added support for multiple folders in the workspace.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.22
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.21
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.20
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.19
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.18
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.17
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.16
 
--   Added setting to allow configuration of Python restart command.
+- Added setting to allow configuration of Python restart command.
 
 ### 1.0.15
 
--   Added Type hierarchy support for Javascript.
--   Added Search Core folder command.
+- Added Type hierarchy support for Javascript.
+- Added Search Core folder command.
 
 ### 1.0.14
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.13
 
--   Improvements to Update and Pull commands from utils-project-update.
+- Improvements to Update and Pull commands from utils-project-update.
 
 ### 1.0.12
 
--   Added new Pull command from utils-project-update.
--   Improved logging to the IQGeo output channel.
+- Added new Pull command from utils-project-update.
+- Improved logging to the IQGeo output channel.
 
 ### 1.0.11
 
--   Move project update to separate package.
--   Convert CJS modules to ESM.
+- Move project update to separate package.
+- Convert CJS modules to ESM.
 
 ### 1.0.10
 
--   Fix Python search where totality is used in class definition.
+- Fix Python search where totality is used in class definition.
 
 ### 1.0.9
 
--   Updated Python search for type hints.
--   Added config for API linting severity.
+- Updated Python search for type hints.
+- Added config for API linting severity.
 
 ### 1.0.8
 
--   Fixes and performance improvements to search.
+- Fixes and performance improvements to search.
 
 ### 1.0.7
 
--   Added automatic watch to restart Python and the active browser debug session.
+- Added automatic watch to restart Python and the active browser debug session.
 
 ### 1.0.6
 
--   New command to update an IQGeo project based on https://github.com/IQGeo/utils-project-template from the options specified in the .iqgeorc.jsonc configuration file.
+- New command to update an IQGeo project based on https://github.com/IQGeo/utils-project-template from the options specified in the .iqgeorc.jsonc configuration file.
 
 ### 1.0.5
 
--   Update shortcut for JSDoc command.
+- Update shortcut for JSDoc command.
 
 ### 1.0.4
 
--   Added command to insert JSDoc for a function or class definition.
+- Added command to insert JSDoc for a function or class definition.
 
 ### 1.0.3
 
--   Search now includes files without need for @ at start of query.
--   Improved file search.
+- Search now includes files without need for @ at start of query.
+- Improved file search.
 
 ### 1.0.2
 
--   Add workspace layout shortcuts.
+- Add workspace layout shortcuts.
 
 ### 1.0.1
 
--   Update readme images and fix license date.
+- Update readme images and fix license date.
 
 ### 1.0.0
 
--   Initial release of iqgeo-utils-vscode to support code navigation and linting.
+- Initial release of iqgeo-utils-vscode to support code navigation and linting.
